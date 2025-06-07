@@ -133,25 +133,41 @@
                 }
                 try {
                     if (typeof TurndownService === 'undefined') {
+                        showStatusMessage("TurndownService is not available.", 3000, true);
                         console.error("TurndownService is not available. SAVE_MARKDOWN will not work.");
                         alert("TurndownService is not available. SAVE_MARKDOWN will not work.");
                         return;
                     }
                     var turndownService = new TurndownService();
-                    let articleElement = document.querySelector('article');
-                    let mainElement = document.querySelector('main');
-                    let bodyToConvert = document.body;
+                    var selection = window.getSelection().toString().trim();
+                    var markdown;
+                    var filename;
 
-                    if (articleElement) { bodyToConvert = articleElement; }
-                    else if (mainElement) { bodyToConvert = mainElement; }
+                    if (selection) {
+                        var range = window.getSelection().getRangeAt(0);
+                        var div = document.createElement('div');
+                        div.appendChild(range.cloneContents());
+                        markdown = turndownService.turndown(div.innerHTML);
+                        filename = (document.title || 'selection') + ' - selection.md';
+                        saveMarkdown(markdown, filename);
+                        showStatusMessage("Selection saved as Markdown.", 3000);
+                    } else {
+                        let articleElement = document.querySelector('article');
+                        let mainElement = document.querySelector('main');
+                        let bodyToConvert = document.body;
 
-                    var markdown = turndownService.turndown(bodyToConvert.innerHTML);
-                    saveMarkdown(markdown, (document.title || 'page') + '.md');
-                    showStatusMessage("Page saved as Markdown.", 3000);
+                        if (articleElement) { bodyToConvert = articleElement; }
+                        else if (mainElement) { bodyToConvert = mainElement; }
+
+                        markdown = turndownService.turndown(bodyToConvert.innerHTML);
+                        filename = (document.title || 'page') + '.md';
+                        saveMarkdown(markdown, filename);
+                        showStatusMessage("Page saved as Markdown.", 3000);
+                    }
                 } catch (e) {
                     console.error("Error in SAVE_MARKDOWN:", e);
                     alert("An error occurred while trying to save as Markdown: " + e.message);
-                    showStatusMessage("Error saving Markdown.", 3000, true);
+                    showStatusMessage("Error saving Markdown: " + e.message, 4000, true);
                 }
             }
         },
