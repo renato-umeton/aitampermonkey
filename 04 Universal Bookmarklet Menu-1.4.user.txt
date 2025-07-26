@@ -1,0 +1,367 @@
+// ==UserScript==
+// @name         4 Universal Bookmarklet Menu
+// @namespace    http://tampermonkey.net/
+// @version      1.4 (Gemini Experimental + Restored ChatGPT URL method)
+// @description  Shows a menu on tap with specified bookmarklets, including ChatGPT and Gemini integration, active on all websites.
+// @author       Your Name (with additions by AI)
+// @match        *://*/*
+// @grant        GM_addStyle
+// @grant        GM_xmlhttpRequest
+// @connect      gemini.google.com
+// @require      https://cdn.jsdelivr.net/npm/turndown@7.1.1/dist/turndown.min.js
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    // --- Helper for Status Messages ---
+    function showStatusMessage(text, duration = 3000, isError = false) {
+        let msgElement = document.getElementById('custom-bm-status-msg');
+        if (!msgElement) {
+            msgElement = document.createElement('div');
+            msgElement.id = 'custom-bm-status-msg';
+            Object.assign(msgElement.style, {
+                position: 'fixed',
+                bottom: '90px',
+                right: '20px',
+                padding: '12px 20px',
+                borderRadius: '8px',
+                zIndex: '100001',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: '500',
+                userSelect: 'none',
+                textAlign: 'center'
+            });
+            document.body.appendChild(msgElement);
+        }
+        msgElement.textContent = text;
+        msgElement.style.backgroundColor = isError ? '#d9534f' : '#5cb85c';
+
+        setTimeout(() => {
+            if (msgElement && msgElement.parentNode) {
+                msgElement.parentNode.removeChild(msgElement);
+            }
+        }, duration);
+    }
+
+
+    // --- Bookmarklet Definitions ---
+    const bookmarklets = [
+        {
+            name: "✨ SUMMARIZE",
+            code: function() {
+                var selection = window.getSelection().toString().trim();
+                if (selection) {
+                    window.open("https://kagi.com/summarizer/?target_language=&summary=takeaway#" + encodeURIComponent(selection), "_blank");
+                } else {
+                    window.open("https://kagi.com/summarizer/index.html?target_language=&summary=takeaway&url=" + encodeURIComponent(location.href), "_blank");
+                }
+            }
+        },
+        {
+            name: "💾 SAVE_MARKDOWN",
+            code: function() {
+                function saveMarkdown(md, filename) {
+                    var blob = new Blob([md], { type: 'text/markdown' });
+                    var a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = filename;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(a.href);
+                }
+
+                try {
+                    if (typeof TurndownService === 'undefined') {
+                        console.error("TurndownService is not available. SAVE_MARKDOWN will not work.");
+                        alert("TurndownService is not available. SAVE_MARKDOWN will not work.");
+                        return;
+                    }
+                    var turndownService = new TurndownService();
+                    let articleElement = document.querySelector('article');
+                    let mainElement = document.querySelector('main');
+                    let bodyToConvert = document.body;
+
+                    if (articleElement) {
+                        bodyToConvert = articleElement;
+                    } else if (mainElement) {
+                        bodyToConvert = mainElement;
+                    }
+
+                    var markdown = turndownService.turndown(bodyToConvert.innerHTML);
+                    saveMarkdown(markdown, (document.title || 'page') + '.md');
+                    showStatusMessage("Page saved as Markdown.", 3000);
+                } catch (e) {
+                    console.error("Error in SAVE_MARKDOWN:", e);
+                    alert("An error occurred while trying to save as Markdown: " + e.message);
+                    showStatusMessage("Error saving Markdown.", 3000, true);
+                }
+            }
+        },
+        {
+            name: "♓ Get it at Harvard!",
+            code: function() {
+                window.open("http://ezp-prod1.hul.harvard.edu/login?url=" + encodeURIComponent(location.href), "_blank");
+            }
+        },
+        {
+            name: "⤵️ sortScholar",
+            code: function() {
+                function extractCitations(text) {
+                    const match = text.match(/Cited by (\d+)/);
+                    return match ? parseInt(match[1]) : 0;
+                }
+                function sortResultsByCitations() {
+                    const container = document.querySelector('#gs_res_ccl_mid');
+                    if (!container) {
+                        console.log('sortScholar: Not a Google Scholar results page or container not found.');
+                        alert('sortScholar: Not a Google Scholar results page or container not found.');
+                        return;
+                    }
+                    const results = Array.from(container.children);
+                    const resultsWithCitations = results.map(result => {
+                        const citeElement = result.querySelector('.gs_fl a[href*="cites"]');
+                        const citeText = citeElement ? citeElement.innerText : (result.innerText || "");
+                        const citations = extractCitations(citeText);
+                        return { element: result, citations };
+                    });
+                    resultsWithCitations.sort((a, b) => b.citations - a.citations);
+                    while (container.firstChild) {
+                        container.removeChild(container.firstChild);
+                    }
+                    resultsWithCitations.forEach(({ element }) => container.appendChild(element));
+                    showStatusMessage("Scholar results sorted by citations.", 3000);
+                }
+                sortResultsByCitations();
+            }
+        },
+        {
+            name: "💬 Talk to ChatGPT",
+            code: function() {
+                var selection = window.getSelection().toString().trim();
+                var queryText;
+                if (selection) {
+                    // Truncate long selections to avoid overly long URLs, though ChatGPT might handle it.
+                    // A common limit for URLs is around 2000 characters. Let's be conservative.
+                    const maxSelectionLength = 9999999999999999; // Max length for the selected text part of the prompt
+                    let truncatedSelection = selection;
+                    if (selection.length > maxSelectionLength) {
+                        truncatedSelection = selection.substring(0, maxSelectionLength) + "... (truncated)";
+                        showStatusMessage("Selected text was long and has been truncated for the URL.", 4000, false);
+                    }
+                    queryText = "Read the text:\n\n\"" + truncatedSelection + "\"\n\nand ";
+                } else {
+                    queryText = "Read the page (" + location.href + ") and ";
+                }
+                const chatGPTUrl = "https://chat.openai.com/?q=" + encodeURIComponent(queryText);
+                showStatusMessage("Opening ChatGPT with your context...", 2000);
+                window.open(chatGPTUrl, "_blank");
+            }
+        },
+        {
+            name: "💡 Talk to Gemini (β)",
+            code: function() {
+                var selection = window.getSelection().toString().trim();
+                var basePrompt;
+
+                if (selection) {
+                    basePrompt = "Read the text:\n\"" + selection + "\"\n\n and ";
+                } else {
+                    basePrompt = "Read the page (" + location.href + ") \n\n and ";
+                }
+
+                let userInstruction = prompt("What do you want to ask or tell Gemini? (Context from the page/selection will be added automatically)", "..");
+
+                if (userInstruction === null || userInstruction.trim() === "") {
+                    showStatusMessage("Gemini action cancelled.", 2000, true);
+                    return;
+                }
+                let fullPrompt = basePrompt + userInstruction;
+
+                showStatusMessage("Attempting Gemini Omnibox method...", 5000);
+                console.log("Tampermonkey Script: Attempting to send to Gemini with x-omnibox-gemini header. Prompt:", fullPrompt);
+
+                GM_xmlhttpRequest({
+                    method: "GET",
+                    url: "https://gemini.google.com/prompt",
+                    headers: {
+                        "x-omnibox-gemini": fullPrompt
+                    },
+                    timeout: 7000,
+                    onload: function(response) {
+                        console.log("Tampermonkey Script: GM_xmlhttpRequest response status:", response.status);
+                        console.log("Tampermonkey Script: GM_xmlhttpRequest final URL:", response.finalUrl);
+
+                        if (response.finalUrl && response.finalUrl.startsWith("https://gemini.google.com/app")) {
+                            showStatusMessage("Omnibox method successful! Redirecting...", 3000);
+                            window.open(response.finalUrl, "_blank");
+                        } else {
+                            console.warn("Tampermonkey Script: x-omnibox-gemini method did not result in a direct redirect to /app. Final URL:", response.finalUrl);
+                            showStatusMessage("Omnibox method failed. Falling back to clipboard.", 3000, true);
+                            navigator.clipboard.writeText(fullPrompt).then(function() {
+                                showStatusMessage("Prompt copied! Paste into Gemini (opening now)...", 3500);
+                                window.open("https://gemini.google.com/app", "_blank");
+                            }).catch(function(err) {
+                                console.error('Tampermonkey Script: Failed to copy text: ', err);
+                                showStatusMessage("Omnibox & clipboard copy failed. Please copy manually.", 4000, true);
+                                window.open("https://gemini.google.com/app", "_blank");
+                            });
+                        }
+                    },
+                    onerror: function(error) {
+                        console.error("Tampermonkey Script: GM_xmlhttpRequest error:", error);
+                        showStatusMessage("Error with Omnibox method. Falling back to clipboard.", 3000, true);
+                        navigator.clipboard.writeText(fullPrompt).then(function() {
+                            showStatusMessage("Prompt copied! Paste into Gemini (opening now)...", 3500);
+                            window.open("https://gemini.google.com/app", "_blank");
+                        }).catch(function(err) {
+                            console.error('Tampermonkey Script: Failed to copy text: ', err);
+                            showStatusMessage("Omnibox & clipboard copy failed. Please copy manually.", 4000, true);
+                            window.open("https://gemini.google.com/app", "_blank");
+                        });
+                    },
+                    ontimeout: function() {
+                        console.error("Tampermonkey Script: GM_xmlhttpRequest timeout.");
+                        showStatusMessage("Timeout with Omnibox method. Falling back to clipboard.", 3000, true);
+                        navigator.clipboard.writeText(fullPrompt).then(function() {
+                            showStatusMessage("Prompt copied! Paste into Gemini (opening now)...", 3500);
+                            window.open("https://gemini.google.com/app", "_blank");
+                        }).catch(function(err) {
+                            console.error('Tampermonkey Script: Failed to copy text: ', err);
+                            showStatusMessage("Omnibox & clipboard copy failed. Please copy manually.", 4000, true);
+                            window.open("https://gemini.google.com/app", "_blank");
+                        });
+                    }
+                });
+            }
+        }
+    ];
+
+    // --- Create Menu Trigger ---
+    const menuTrigger = document.createElement('div');
+    menuTrigger.id = 'custom-bm-menu-trigger';
+    menuTrigger.textContent = '📟';
+    document.body.appendChild(menuTrigger);
+
+    // --- Create Menu Container ---
+    const menuContainer = document.createElement('div');
+    menuContainer.id = 'custom-bm-menu-container';
+    document.body.appendChild(menuContainer);
+
+    // --- Populate Menu ---
+    bookmarklets.forEach(bm => {
+        const menuItem = document.createElement('a');
+        menuItem.href = '#';
+        menuItem.textContent = bm.name;
+        menuItem.className = 'custom-bm-menu-item';
+        menuItem.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            try {
+                bm.code();
+            } catch (e) {
+                console.error("Error executing bookmarklet '" + bm.name + "':", e);
+                alert("Error in bookmarklet '" + bm.name + "': " + e.message);
+                showStatusMessage("Error in: " + bm.name, 3000, true);
+            }
+            menuContainer.style.display = 'none';
+            menuVisible = false; // Ensure menu state is updated
+        });
+        menuContainer.appendChild(menuItem);
+    });
+
+    // --- Toggle Menu ---
+    let menuVisible = false;
+    menuTrigger.addEventListener('click', function(event) {
+        event.stopPropagation();
+        if (menuVisible) {
+            menuContainer.style.display = 'none';
+            menuVisible = false;
+        } else {
+            const triggerRect = menuTrigger.getBoundingClientRect();
+            menuContainer.style.bottom = (window.innerHeight - triggerRect.top) + 'px'; // Position above trigger
+            menuContainer.style.right = (window.innerWidth - triggerRect.right - (triggerRect.width / 2)) + 'px'; // Center horizontally with trigger
+
+            menuContainer.style.display = 'block'; // Show to calculate dimensions
+
+            // Adjust if off-screen (simple adjustment, might need more finesse for complex cases)
+            const menuRect = menuContainer.getBoundingClientRect();
+            if (menuRect.right > window.innerWidth) {
+                 menuContainer.style.right = '5px';
+            }
+            if (menuRect.left < 0) { // Should be handled by right adjustment mostly
+                menuContainer.style.left = '5px';
+                menuContainer.style.right = 'auto'; // Avoid conflict if it was set
+            }
+            if (menuRect.top < 0) { // If trigger is too high on a short screen
+                menuContainer.style.top = '5px';
+                menuContainer.style.bottom = 'auto';
+            }
+            // Transform to align right edge of menu with right edge of trigger for a common pattern
+            menuContainer.style.transform = `translateX(${triggerRect.width / 2 - menuContainer.offsetWidth / 2}px)`;
+            if ( (menuContainer.getBoundingClientRect().left + (triggerRect.width / 2 - menuContainer.offsetWidth / 2)) < 0){ //re-adjust if off screen from transform
+                 menuContainer.style.transform = `translateX(0px)`; // or align left edge to 5px
+                 menuContainer.style.left = '5px';
+                 menuContainer.style.right = 'auto';
+            }
+
+
+            menuVisible = true;
+        }
+    });
+
+    // Close menu if clicking outside
+    document.addEventListener('click', function(event) {
+        if (menuVisible && !menuContainer.contains(event.target) && !menuTrigger.contains(event.target)) {
+            menuContainer.style.display = 'none';
+            menuVisible = false;
+        }
+    });
+
+    // --- Add Styles ---
+    GM_addStyle(`
+        #custom-bm-menu-trigger {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(205,205,205,0.7);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            z-index: 99998;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            user-select: none;
+            backdrop-filter: blur(3px);
+        }
+        #custom-bm-menu-container {
+            display: none;
+            position: fixed;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            z-index: 99999;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            padding: 8px 0;
+            min-width: 220px; /* Slightly wider for comfort */
+        }
+        .custom-bm-menu-item {
+            display: block;
+            padding: 12px 22px;
+            text-decoration: none;
+            color: #333;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+        .custom-bm-menu-item:hover {
+            background-color: #f0f0f0;
+            color: #000;
+        }
+    `);
+
+})();
