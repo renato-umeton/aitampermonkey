@@ -1,0 +1,1144 @@
+// ==UserScript==
+// @name         26 Universal Bookmarklet Menu
+// @namespace    http://tampermonkey.net/
+// @version      2.6
+// @description  Shows a menu on tap with specified bookmarklets, including ChatGPT, Claude, Gemini integration, Gemini Code Generator, and multi-tab basket functionality.
+// @author       Renato (with additions by AI)
+// @match        *://*/*
+// @grant        GM_addStyle
+// @grant        GM_setValue
+// @grant        GM_getValue
+// @grant        GM_xmlhttpRequest
+// @require      https://cdn.jsdelivr.net/npm/turndown@7.1.1/dist/turndown.min.js
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    // --- Helper for Status Messages (Generic Green/Red, Centered) ---
+    function showStatusMessage(text, duration = 3000, isError = false) {
+        let msgElement = document.getElementById('custom-bm-status-msg');
+        if (!msgElement) {
+            msgElement = document.createElement('div');
+            msgElement.id = 'custom-bm-status-msg';
+            Object.assign(msgElement.style, {
+                position: 'fixed',
+                bottom: '100px', // Positioned at the bottom center
+                left: '50%',
+                transform: 'translateX(-50%)',
+                padding: '12px 20px',
+                borderRadius: '8px',
+                zIndex: '100001',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: '500',
+                userSelect: 'none',
+                textAlign: 'center',
+                maxWidth: 'calc(100% - 40px)' // Ensure it doesn't overflow small screens
+            });
+            document.body.appendChild(msgElement);
+        }
+        msgElement.textContent = text;
+        msgElement.style.backgroundColor = isError ? '#d9534f' : '#5cb85c';
+        setTimeout(() => {
+            if (msgElement && msgElement.parentNode) {
+                msgElement.parentNode.removeChild(msgElement);
+            }
+        }, duration);
+    }
+
+    // --- Helper for Custom Gemini Notification (Bottom-Right, Blue, Fading) ---
+    function showCustomGeminiNotification(message) {
+        let existingBox = document.getElementById('custom-gemini-notification-box');
+        if (existingBox) {
+            // Clear existing timeouts and remove immediately for new message
+            if (existingBox.fadeInTimeout) clearTimeout(existingBox.fadeInTimeout);
+            if (existingBox.fadeOutTimeout) clearTimeout(existingBox.fadeOutTimeout);
+            if (existingBox.removeTimeout) clearTimeout(existingBox.removeTimeout);
+            existingBox.parentNode.removeChild(existingBox);
+        }
+
+        const notificationBox = document.createElement('div');
+        notificationBox.id = 'custom-gemini-notification-box';
+        notificationBox.textContent = message;
+
+        Object.assign(notificationBox.style, {
+            position: 'fixed',
+            bottom: '100px',
+            right: '30px',
+            minWidth: '230px',
+            maxWidth: '320px',
+            padding: '25px',
+            background: 'linear-gradient(145deg, #4285F4, #1A73E8)', // Google Blues
+            color: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 6px 25px rgba(0,0,0,0.25)',
+            zIndex: '100002', // Higher than generic status message
+            opacity: '0',
+            transform: 'translateY(20px) scale(0.95)', // Start slightly lower and smaller for entry animation
+            transition: 'opacity 0.4s ease-out, transform 0.4s ease-out',
+            textAlign: 'center',
+            fontSize: '16px',
+            lineHeight: '1.4',
+            fontFamily: 'Arial, sans-serif' // Using a common sans-serif font
+        });
+        document.body.appendChild(notificationBox);
+
+        // Store timeouts on the element itself to manage them if a new notification comes quickly
+        notificationBox.fadeInTimeout = setTimeout(() => {
+            notificationBox.style.opacity = '1';
+            notificationBox.style.transform = 'translateY(0) scale(1)';
+        }, 50); // Short delay for CSS transition to apply
+
+        // Start fading out after 1 second of being fully visible
+        notificationBox.fadeOutTimeout = setTimeout(() => {
+            notificationBox.style.opacity = '0';
+            notificationBox.style.transform = 'translateY(20px) scale(0.95)'; // Optional: slide out
+        }, 3000 + 400); // 1s display + 0.4s for fade-in animation
+
+        // Remove from DOM after fade out animation is complete
+        notificationBox.removeTimeout = setTimeout(() => {
+            if (notificationBox.parentNode) {
+                notificationBox.parentNode.removeChild(notificationBox);
+            }
+        }, 2000 + 400 + 400); // 1s display + 0.4s fade-in + 0.4s fade-out
+    }
+
+    // --- Basket Management Functions ---
+    function getBasket() {
+        try {
+            const basketData = GM_getValue('url_basket', '[]');
+            return JSON.parse(basketData);
+        } catch (e) {
+            console.error('Error reading basket:', e);
+            return [];
+        }
+    }
+
+    function saveBasket(basket) {
+        try {
+            GM_setValue('url_basket', JSON.stringify(basket));
+        } catch (e) {
+            console.error('Error saving basket:', e);
+        }
+    }
+
+    function addToBasket(url, title) {
+        const basket = getBasket();
+        const existingIndex = basket.findIndex(item => item.url === url);
+
+        if (existingIndex === -1) {
+            basket.push({
+                url: url,
+                title: title || 'Untitled',
+                dateAdded: new Date().toISOString()
+            });
+            saveBasket(basket);
+            return true; // Added successfully
+        }
+        return false; // Already exists
+    }
+
+    function removeFromBasket(url) {
+        const basket = getBasket();
+        const filteredBasket = basket.filter(item => item.url !== url);
+        if (filteredBasket.length !== basket.length) {
+            saveBasket(filteredBasket);
+            return true; // Removed successfully
+        }
+        return false; // Not found
+    }
+
+    function clearBasket() {
+        saveBasket([]);
+    }
+
+    // --- Helper for API Key Management ---
+    function getGeminiApiKey() {
+        let apiKey = GM_getValue('gemini_api_key', '');
+        if (!apiKey) {
+            apiKey = prompt('Please enter your Gemini API key:\n\n1. Go to: https://aistudio.google.com/app/apikey\n2. Click "Create API key"\n3. Copy and paste it here\n\nNote: The API key should start with "AIza" and be about 39 characters long.\n\nThis will be stored locally and used for the Code Generator feature.');
+            if (apiKey && apiKey.trim()) {
+                // Basic validation
+                const trimmedKey = apiKey.trim();
+                if (trimmedKey.length < 30) {
+                    alert('Warning: This API key seems too short. Make sure you copied the complete key.');
+                }
+                GM_setValue('gemini_api_key', trimmedKey);
+                return trimmedKey;
+            }
+        }
+        return apiKey;
+    }
+
+    // --- Helper for Gemini API Call ---
+    async function callGeminiAPI(prompt, apiKey) {
+        const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' + apiKey;
+        const requestBody = {
+            contents: [{
+                parts: [{
+                    text: prompt
+                }]
+            }],
+            generationConfig: {
+                temperature: 0.7,
+                topK: 40,
+                topP: 0.95,
+                maxOutputTokens: 2048,
+            }
+        };
+        return new Promise((resolve, reject) => {
+            GM_xmlhttpRequest({
+                method: 'POST',
+                url: url,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                data: JSON.stringify(requestBody),
+                onload: function(response) {
+                    console.log('API Response Status:', response.status);
+                    console.log('API Response Text:', response.responseText);
+
+                    try {
+                        if (response.status >= 200 && response.status < 300) {
+                            const data = JSON.parse(response.responseText);
+
+                            if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                                resolve(data.candidates[0].content.parts[0].text);
+                            } else {
+                                console.error('Unexpected API response structure:', data);
+                                reject(new Error('Unexpected API response format. Check console for details.'));
+                            }
+                        } else {
+                            let errorMessage = `API request failed: ${response.status}`;
+                            try {
+                                const errorData = JSON.parse(response.responseText);
+                                if (errorData.error && errorData.error.message) {
+                                    errorMessage += ` - ${errorData.error.message}`;
+                                }
+                            } catch (e) {
+                                errorMessage += ` - ${response.responseText}`;
+                            }
+                            reject(new Error(errorMessage));
+                        }
+                    } catch (error) {
+                        console.error('Error parsing response:', error);
+                        reject(new Error('Failed to parse API response: ' + error.message));
+                    }
+                },
+                onerror: function(error) {
+                    console.error('Network error:', error);
+                    reject(new Error('Network error - check your internet connection and API key'));
+                },
+                ontimeout: function() {
+                    reject(new Error('Request timeout - the API is taking too long to respond'));
+                },
+                timeout: 30000 // 30 second timeout
+            });
+        });
+    }
+
+    // --- Helper to Extract JavaScript Code ---
+    function extractJavaScriptCode(text) {
+        // Try to find JavaScript code blocks first
+        const jsCodeBlockRegex = /```(?:javascript|js)?\s*\n([\s\S]*?)\n```/gi;
+        const matches = text.match(jsCodeBlockRegex);
+
+        if (matches && matches.length > 0) {
+            // Extract the code from the first code block
+            const codeMatch = matches[0].match(/```(?:javascript|js)?\s*\n([\s\S]*?)\n```/i);
+            if (codeMatch && codeMatch[1]) {
+                return codeMatch[1].trim();
+            }
+        }
+
+        // If no code blocks found, try to find code between specific markers
+        const functionRegex = /(function\s*\([^)]*\)\s*\{[\s\S]*?\}|[\s\S]*)/i;
+        const functionMatch = text.match(functionRegex);
+
+        if (functionMatch) {
+            return functionMatch[0].trim();
+        }
+
+        // As a fallback, return the entire text (assuming it's all code)
+        return text.trim();
+    }
+
+    // --- Bookmarklet Definitions ---
+    const basketBookmarklets = [
+        {
+            name: "🛒 Add to Basket",
+            code: function() {
+                const currentUrl = location.href;
+                const currentTitle = document.title || 'Untitled';
+
+                if (addToBasket(currentUrl, currentTitle)) {
+                    showStatusMessage(`Added to basket: ${currentTitle}`, 3000);
+                } else {
+                    showStatusMessage("Already in basket!", 3000, true);
+                }
+            }
+        },
+        {
+            name: "📋 View Basket",
+            code: function() {
+                const basket = getBasket();
+                if (basket.length === 0) {
+                    alert("Basket is empty!");
+                    return;
+                }
+
+                let message = `Basket contains ${basket.length} items:\n\n`;
+                basket.forEach((item, index) => {
+                    const date = new Date(item.dateAdded).toLocaleDateString();
+                    message += `${index + 1}. ${item.title}\n   ${item.url}\n   Added: ${date}\n\n`;
+                });
+
+                if (confirm(message + "Would you like to clear the basket?")) {
+                    clearBasket();
+                    showStatusMessage("Basket cleared!", 3000);
+                }
+            }
+        },
+        {
+            name: "🗑️ Clear Basket",
+            code: function() {
+                const basket = getBasket();
+                if (basket.length === 0) {
+                    showStatusMessage("Basket is already empty!", 3000);
+                    return;
+                }
+
+                if (confirm(`Clear basket with ${basket.length} items?`)) {
+                    clearBasket();
+                    showStatusMessage("Basket cleared!", 3000);
+                }
+            }
+        },
+        {
+            name: "📚 Summarize Basket",
+            code: function() {
+                const basket = getBasket();
+                if (basket.length === 0) {
+                    showStatusMessage("Basket is empty! Add some URLs first.", 3000, true);
+                    return;
+                }
+
+                // Open multiple Kagi summarizer tabs for each URL in basket
+                basket.forEach((item, index) => {
+                    setTimeout(() => {
+                        window.open("https://kagi.com/summarizer/index.html?target_language=&summary=takeaway&url=" + encodeURIComponent(item.url), "_blank");
+                    }, index * 500); // Stagger opening to avoid browser blocking
+                });
+
+                showStatusMessage(`Opening ${basket.length} summarizer tabs...`, 3000);
+            }
+        },
+        {
+            name: "🤖 ChatGPT Basket",
+            code: function() {
+                const basket = getBasket();
+                if (basket.length === 0) {
+                    showStatusMessage("Basket is empty! Add some URLs first.", 3000, true);
+                    return;
+                }
+
+                // Create a combined prompt with all basket URLs
+                let combinedPrompt = "Read and analyze the following " + basket.length + " pages:\n\n";
+                basket.forEach((item, index) => {
+                    combinedPrompt += `${index + 1}. ${item.title}\n   ${item.url}\n\n`;
+                });
+                combinedPrompt += "and ";
+
+                const chatGPTUrl = "https://chat.openai.com/?q=" + encodeURIComponent(combinedPrompt);
+                showStatusMessage("Opening ChatGPT with basket URLs...", 2000);
+                window.open(chatGPTUrl, "_blank");
+            }
+        },
+        {
+            name: "🧠 Claude Basket",
+            code: function() {
+                const basket = getBasket();
+                if (basket.length === 0) {
+                    showStatusMessage("Basket is empty! Add some URLs first.", 3000, true);
+                    return;
+                }
+
+                // Create a combined prompt with all basket URLs
+                let combinedPrompt = "Read and analyze the following " + basket.length + " pages:\n\n";
+                basket.forEach((item, index) => {
+                    combinedPrompt += `${index + 1}. ${item.title}\n   ${item.url}\n\n`;
+                });
+                combinedPrompt += "and ";
+
+                const claudeUrl = "https://claude.ai/new?q=" + encodeURIComponent(combinedPrompt);
+                showStatusMessage("Opening Claude with basket URLs...", 2000);
+                window.open(claudeUrl, "_blank");
+            }
+        },
+        {
+            name: "💎 Gemini Basket",
+            code: function() {
+                const basket = getBasket();
+                if (basket.length === 0) {
+                    showStatusMessage("Basket is empty! Add some URLs first.", 3000, true);
+                    return;
+                }
+
+                // Create a combined prompt with all basket URLs
+                let combinedPrompt = "read and analyze the following " + basket.length + " pages:\n\n";
+                basket.forEach((item, index) => {
+                    combinedPrompt += `${index + 1}. ${item.title}\n   ${item.url}\n\n`;
+                });
+                combinedPrompt += "and ";
+
+                navigator.clipboard.writeText(combinedPrompt).then(function() {
+                    showCustomGeminiNotification("Basket prompt ready for Gemini");
+                }).catch(function(err) {
+                    console.error('Failed to copy basket prompt for Gemini:', err);
+                    showStatusMessage("Error copying Gemini basket prompt.", 3000, true);
+                });
+            }
+        }
+    ];
+
+    const regularBookmarklets = [
+        {
+            name: "✨ SUMMARIZE", // Kagi Summarizer
+            code: function() {
+                var selection = window.getSelection().toString().trim();
+                if (selection) {
+                    window.open("https://kagi.com/summarizer/?target_language=&summary=takeaway#" + encodeURIComponent(selection), "_blank");
+                } else {
+                    window.open("https://kagi.com/summarizer/index.html?target_language=&summary=takeaway&url=" + encodeURIComponent(location.href), "_blank");
+                }
+            }
+        },
+        {
+            name: "💾 SAVE_MARKDOWN",
+            code: function() {
+                function saveMarkdown(md, filename) {
+                    var blob = new Blob([md], { type: 'text/markdown' });
+                    var a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = filename;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(a.href);
+                }
+                try {
+                    if (typeof TurndownService === 'undefined') {
+                        console.error("TurndownService is not available. SAVE_MARKDOWN will not work.");
+                        alert("TurndownService is not available. SAVE_MARKDOWN will not work.");
+                        return;
+                    }
+                    var turndownService = new TurndownService();
+                    let articleElement = document.querySelector('article');
+                    let mainElement = document.querySelector('main');
+                    let bodyToConvert = document.body;
+
+                    if (articleElement) { bodyToConvert = articleElement; }
+                    else if (mainElement) { bodyToConvert = mainElement; }
+
+                    var markdown = turndownService.turndown(bodyToConvert.innerHTML);
+                    saveMarkdown(markdown, (document.title || 'page') + '.md');
+                    showStatusMessage("Page saved as Markdown.", 3000);
+                } catch (e) {
+                    console.error("Error in SAVE_MARKDOWN:", e);
+                    alert("An error occurred while trying to save as Markdown: " + e.message);
+                    showStatusMessage("Error saving Markdown.", 3000, true);
+                }
+            }
+        },
+        {
+            name: "♓ Get it at Harvard!",
+            code: function() {
+                location.href="http://ezp-prod1.hul.harvard.edu/login?url="+location.href;
+            }
+        },
+        {
+            name: "🎞️ mp4[0]",
+            code: function(){
+                function findPrivateId(){const t=document.querySelectorAll("script"),e=/"privateId"\s*:\s*["']([^"']+)["']/;for(const c of t){const s=c.textContent,a=s.match(e);if(a&&a[1])return a[1]}return null}
+                var privateId = findPrivateId();
+                location.href = "https://geo.dailymotion.com/player/xjyqe.html?video="+privateId;
+            }
+        },
+        {
+            name: "⤵️ sortScholar",
+            code: function() {
+                function extractCitations(text) {
+                    const match = text.match(/Cited by (\d+)/);
+                    return match ? parseInt(match[1]) : 0;
+                }
+                function sortResultsByCitations() {
+                    const container = document.querySelector('#gs_res_ccl_mid');
+                    if (!container) {
+                        console.log('sortScholar: Not a Google Scholar results page or container not found.');
+                        alert('sortScholar: Not a Google Scholar results page or container not found.');
+                        return;
+                    }
+                    const results = Array.from(container.children);
+                    const resultsWithCitations = results.map(result => {
+                        const citeElement = result.querySelector('.gs_fl a[href*="cites"]');
+                        const citeText = citeElement ? citeElement.innerText : (result.innerText || "");
+                        const citations = extractCitations(citeText);
+                        return { element: result, citations };
+                    });
+                    resultsWithCitations.sort((a, b) => b.citations - a.citations);
+                    while (container.firstChild) { container.removeChild(container.firstChild); }
+                    resultsWithCitations.forEach(({ element }) => container.appendChild(element));
+                    showStatusMessage("Scholar results sorted by citations.", 3000);
+                }
+                sortResultsByCitations();
+            }
+        },
+        {
+            name: "💬 Talk to ChatGPT", // Restored "long URL" version
+            code: function() {
+                var selection = window.getSelection().toString().trim();
+                var queryText;
+                if (selection) {
+                    const maxSelectionLength =9999999999999; // Avoid overly long URLs
+                    let truncatedSelection = selection;
+                    if (selection.length > maxSelectionLength) {
+                        truncatedSelection = selection.substring(0, maxSelectionLength) + "... (truncated)";
+                        showStatusMessage("Selected text was long and has been truncated for the URL.", 4000, false);
+                    }
+                    queryText = "Read the text:\n\n\"" + truncatedSelection + "\"\n\nand ";
+                } else {
+                    queryText = "Read the page (" + location.href + ") and ";
+                }
+                const chatGPTUrl = "https://chat.openai.com/?q=" + encodeURIComponent(queryText);
+                showStatusMessage("Opening ChatGPT with your context...", 2000);
+                window.open(chatGPTUrl, "_blank");
+            }
+        },
+        {
+            name: "🍊 ask Claude", // New Claude function
+            code: function() {
+                var selection = window.getSelection().toString().trim();
+                var queryText;
+                if (selection) {
+                    const maxSelectionLength = 9999999999999; // Avoid overly long URLs
+                    let truncatedSelection = selection;
+                    if (selection.length > maxSelectionLength) {
+                        truncatedSelection = selection.substring(0, maxSelectionLength) + "... (truncated)";
+                        showStatusMessage("Selected text was long and has been truncated for the URL.", 4000, false);
+                    }
+                    queryText = "Read the text:\n\n\"" + truncatedSelection + "\"\n\nand ";
+                } else {
+                    queryText = "Read the page (" + location.href + ") and ";
+                }
+                const claudeUrl = "https://claude.ai/new?q=" + encodeURIComponent(queryText);
+                showStatusMessage("Opening Claude with your context...", 2000);
+                window.open(claudeUrl, "_blank");
+            }
+        },
+        {
+            name: "🔷 Copy Gemini Prompt", // New Gemini function: copies prompt, shows custom notification
+            code: function() {
+                var selection = window.getSelection().toString().trim();
+                var promptToCopy;
+
+                if (selection) {
+                    // As per user specification: "read the text $selection and "
+                    promptToCopy = "read the text " + selection + " and ";
+                } else {
+                    // As per user specification: "read the page ( $url ) and "
+                    promptToCopy = "read the page ( " + location.href + " ) and ";
+                }
+
+                navigator.clipboard.writeText(promptToCopy).then(function() {
+                    showCustomGeminiNotification("Prompt ready to be pasted in Gemini");
+                    // Optionally, you could still open Gemini here in a new tab if desired:
+                    // setTimeout(() => { window.open("https://gemini.google.com/app", "_blank"); }, 500);
+                }).catch(function(err) {
+                    console.error('Tampermonkey Script: Failed to copy text for Gemini: ', err);
+                    showStatusMessage("Error copying Gemini prompt.", 3000, true); // Use generic error message
+                });
+            }
+        },
+        {
+            name: "🤖 Generate & Run Code", // New Gemini Code Generator
+            code: async function() {
+                try {
+                    // Get user input
+                    const userRequest = prompt("Describe what you want to implement on this page:\n\n(Example: 'highlight all links in red', 'add a floating timer', 'scroll to top button', etc.)");
+                    if (!userRequest || userRequest.trim() === '') {
+                        return;
+                    }
+
+                    // Get API key
+                    const apiKey = getGeminiApiKey();
+                    if (!apiKey) {
+                        showStatusMessage("API key required for code generation.", 3000, true);
+                        return;
+                    }
+
+                    showStatusMessage("Generating code with Gemini AI...", 2000);
+                    // Create prompt for Gemini
+                    const geminiPrompt = `You are a JavaScript code generator. The user wants to implement the following on a web page:
+
+"${userRequest}"
+
+Generate JavaScript code that can be executed immediately on any web page to implement this functionality. Follow these guidelines:
+
+1. Write complete, working JavaScript code
+2. Use modern JavaScript (ES6+) when appropriate
+3. Make the code safe and non-destructive
+4. Include error handling where appropriate
+5. Use DOM manipulation methods like querySelector, addEventListener, etc.
+6. If creating elements, use proper styling
+7. Make the code work on the current page context
+
+Return ONLY the JavaScript code wrapped in a code block. Do not include explanations before or after the code block.
+
+Current page URL: ${window.location.href}
+Current page title: ${document.title}`;
+                    // Call Gemini API
+                    const response = await callGeminiAPI(geminiPrompt, apiKey);
+                    // Extract JavaScript code
+                    const jsCode = extractJavaScriptCode(response);
+                    if (!jsCode) {
+                        showStatusMessage("No valid JavaScript code generated.", 3000, true);
+                        return;
+                    }
+
+                    // Ask for confirmation before executing
+                    const confirmExecution = confirm(`Generated code:\n\n${jsCode.substring(0, 500)}${jsCode.length > 500 ? '...' : ''}\n\nDo you want to execute this code on the current page?\n\n⚠️ Warning: Only execute code you trust!`);
+                    if (!confirmExecution) {
+                        // Offer to copy to clipboard instead
+                        if (confirm("Would you like to copy the generated code to clipboard instead?")) {
+                            try {
+                                await navigator.clipboard.writeText(jsCode);
+                                showStatusMessage("Code copied to clipboard!", 3000);
+                            } catch (err) {
+                                showStatusMessage("Failed to copy to clipboard.", 3000, true);
+                            }
+                        }
+                        return;
+                    }
+
+                    // Execute the generated code
+                    try {
+                        // Create a function to execute the code in a controlled way
+                        const executeCode = new Function(jsCode);
+                        executeCode();
+                        showStatusMessage("Code executed successfully!", 3000);
+                    } catch (execError) {
+                        console.error("Code execution error:", execError);
+                        showStatusMessage("Error executing generated code: " + execError.message, 5000, true);
+
+                        // Offer to copy the code for manual inspection
+                        if (confirm("The generated code had an execution error. Would you like to copy it to clipboard for manual review?")) {
+                            try {
+                                await navigator.clipboard.writeText(jsCode);
+                                showStatusMessage("Code copied to clipboard for review.", 3000);
+                            } catch (err) {
+                                showStatusMessage("Failed to copy to clipboard.", 3000, true);
+                            }
+                        }
+                    }
+
+                } catch (error) {
+                    console.error("Gemini Code Generator Error:", error);
+                    if (error.message.includes('API request failed: 403') || error.message.includes('403')) {
+                        showStatusMessage("Invalid API key. Please check your Gemini API key.", 5000, true);
+                        // Clear the stored API key so user can enter a new one
+                        GM_setValue('gemini_api_key', '');
+                    } else if (error.message.includes('API request failed: 429')) {
+                        showStatusMessage("Rate limit exceeded. Please wait a moment and try again.", 5000, true);
+                    } else if (error.message.includes('API request failed: 400')) {
+                        showStatusMessage("Bad request. The prompt might be too long or contain invalid content.", 5000, true);
+                    } else if (error.message.includes('Network error') || error.message.includes('timeout')) {
+                        showStatusMessage("Network error. Check your internet connection and try again.", 5000, true);
+                    } else {
+                        showStatusMessage("Error: " + error.message.substring(0, 100), 5000, true);
+                    }
+                }
+            }
+        }
+    ];
+
+    // Combine basket and regular bookmarklets
+    const bookmarklets = [...basketBookmarklets, ...regularBookmarklets];
+    // --- Create Menu Trigger (📟) ---
+    const menuTrigger = document.createElement('div');
+    menuTrigger.id = 'custom-bm-menu-trigger';
+    menuTrigger.textContent = '📟';
+    document.body.appendChild(menuTrigger);
+
+    // --- Draggable Menu Trigger Logic ---
+
+    // ====== DESKTOP DRAG LOGIC (Existing - Unchanged) ======
+    let dragState = {
+        isAttemptingDrag: false, // True from mousedown until mouseup
+        isActuallyDragging: false, // True if mouse moved significantly during isAttemptingDrag
+        startX: 0,               // Mouse X at mousedown
+        startY: 0,               // Mouse Y at mousedown
+        initialElemX: 0,         // Trigger's initial left position (pixels)
+        initialElemY: 0          // Trigger's initial top position (pixels)
+    };
+    menuTrigger.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return; // Only handle left mouse button
+
+        dragState.isAttemptingDrag = true;
+        dragState.isActuallyDragging = false; // Reset for the current drag attempt
+        dragState.startX = e.clientX;
+        dragState.startY = e.clientY;
+
+        const rect = menuTrigger.getBoundingClientRect();
+        dragState.initialElemX = rect.left;
+        dragState.initialElemY = rect.top;
+
+        // Explicitly set left/top for smooth dragging, overriding CSS right/bottom
+        menuTrigger.style.left = dragState.initialElemX + 'px';
+        menuTrigger.style.top = dragState.initialElemY + 'px';
+        menuTrigger.style.right = 'auto';
+        menuTrigger.style.bottom = 'auto';
+
+        document.body.style.userSelect = 'none'; // Prevent text selection on page during drag
+
+        document.addEventListener('mousemove', handleDragMove);
+        document.addEventListener('mouseup', handleDragEnd);
+        e.preventDefault(); // Prevent default drag behavior (e.g., for images)
+    });
+    function handleDragMove(e) {
+        if (!dragState.isAttemptingDrag) return;
+
+        const deltaX = e.clientX - dragState.startX;
+        const deltaY = e.clientY - dragState.startY;
+
+        // If mouse has moved beyond a small threshold, consider it a drag
+        if (!dragState.isActuallyDragging && (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5)) {
+            dragState.isActuallyDragging = true;
+            menuTrigger.style.cursor = 'grabbing';
+            if (menuVisible) { // If menu is open, hide it when drag starts
+                menuContainer.style.display = 'none';
+                menuVisible = false;
+            }
+        }
+
+        if (dragState.isActuallyDragging) {
+            let newLeft = dragState.initialElemX + deltaX;
+            let newTop = dragState.initialElemY + deltaY;
+
+            // Constrain movement to within the viewport
+            const triggerRect = menuTrigger.getBoundingClientRect(); // Current dimensions
+            if (newLeft < 0) newLeft = 0;
+            if (newTop < 0) newTop = 0;
+            if (newLeft + triggerRect.width > window.innerWidth) newLeft = window.innerWidth - triggerRect.width;
+            if (newTop + triggerRect.height > window.innerHeight) newTop = window.innerHeight - triggerRect.height;
+
+            menuTrigger.style.left = newLeft + 'px';
+            menuTrigger.style.top = newTop + 'px';
+        }
+    }
+
+    function handleDragEnd() {
+        if (!dragState.isAttemptingDrag) return; // Should not happen if logic is correct
+
+        document.removeEventListener('mousemove', handleDragMove);
+        document.removeEventListener('mouseup', handleDragEnd);
+        document.body.style.userSelect = ''; // Re-enable text selection
+
+        if (dragState.isActuallyDragging) {
+            menuTrigger.style.cursor = 'pointer'; // Reset cursor
+        }
+        // The isActuallyDragging flag will be checked by the click handler
+        // to differentiate between a click and a drag.
+        // Reset isAttemptingDrag; isActuallyDragging will be reset by the click handler.
+        dragState.isAttemptingDrag = false;
+    }
+
+    // ====== MOBILE DRAG LOGIC (NEW) ======
+    const mobileDragState = {
+        longPressTimer: null,
+        isLongPressActive: false,       // True after 1s continuous tap allows dragging
+        isDragging: false,              // True if finger moves after long press is active
+        startX: 0,                      // Touch X at touchstart
+        startY: 0,                      // Touch Y at touchstart
+        initialElemX: 0,                // Trigger's initial left position (pixels)
+        initialElemY: 0,                // Trigger's initial top position (pixels)
+        hasMovedTooMuchForLongPress: false, // If finger moves significantly before 1s timer
+        triggerInitialTransition: '',   // To store and restore menuTrigger's inline transition
+        originalTransformOrigin: ''     // To store and restore transform-origin
+    };
+    menuTrigger.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 1) { // Only handle single touch
+            if (mobileDragState.longPressTimer) {
+                clearTimeout(mobileDragState.longPressTimer);
+                mobileDragState.longPressTimer = null;
+            }
+            return;
+        }
+
+        const touch = e.touches[0];
+        mobileDragState.startX = touch.clientX;
+        mobileDragState.startY = touch.clientY;
+        const rect = menuTrigger.getBoundingClientRect();
+        mobileDragState.initialElemX = rect.left;
+        mobileDragState.initialElemY = rect.top;
+
+        mobileDragState.isLongPressActive = false;
+        mobileDragState.isDragging = false;
+        mobileDragState.hasMovedTooMuchForLongPress = false;
+        mobileDragState.triggerInitialTransition = menuTrigger.style.transition || ''; // Capture current inline transition
+
+        // Prepare for potential dragging (set left/top explicitly, similar to desktop)
+        menuTrigger.style.left = mobileDragState.initialElemX + 'px';
+        menuTrigger.style.top = mobileDragState.initialElemY + 'px';
+        menuTrigger.style.right = 'auto';
+        menuTrigger.style.bottom = 'auto';
+        if (mobileDragState.longPressTimer) {
+            clearTimeout(mobileDragState.longPressTimer);
+        }
+
+        mobileDragState.longPressTimer = setTimeout(() => {
+            mobileDragState.longPressTimer = null; // Timer has fired
+            if (mobileDragState.hasMovedTooMuchForLongPress) return; // Abort if moved significantly during timeout
+
+            mobileDragState.isLongPressActive = true;
+            mobileDragState.originalTransformOrigin = menuTrigger.style.transformOrigin || '';
+            menuTrigger.style.transformOrigin = '50% 50%'; // Set for consistent positioning when scaled
+            menuTrigger.style.transition = 'transform 0.2s ease-out'; // Transition for scaling
+            menuTrigger.style.transform = 'scale(1.9)';
+            menuTrigger.style.cursor = 'grabbing';
+
+            if (menuVisible) { // If menu is open, hide it when drag mode activates
+                menuContainer.style.display = 'none';
+                menuVisible = false;
+            }
+
+            // After scaling animation, remove transition property for smooth direct position updates during drag
+            setTimeout(() => {
+                if (mobileDragState.isLongPressActive) { // Check if still in long press drag mode
+                    menuTrigger.style.transition = 'none';
+                }
+            }, 200); // Duration of the scale animation
+        }, 1000); // 1 full second for long press
+
+    }, { passive: false }); // passive: false to allow preventDefault in touchmove
+
+    document.addEventListener('touchmove', (e) => {
+        // Only proceed if an interaction was initiated on the menuTrigger
+        if (!mobileDragState.longPressTimer && !mobileDragState.isLongPressActive) {
+            return;
+        }
+        if (!e.touches || e.touches.length === 0) return; // Should not happen if checks above pass
+        const touch = e.touches[0];
+
+        if (mobileDragState.longPressTimer) { // If timer is still pending (long press not yet active)
+            const deltaX = touch.clientX - mobileDragState.startX;
+            const deltaY = touch.clientY - mobileDragState.startY;
+            // If finger moves too much before 1s, cancel long press
+            if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) { // Threshold for movement
+                clearTimeout(mobileDragState.longPressTimer);
+                mobileDragState.longPressTimer = null;
+                mobileDragState.hasMovedTooMuchForLongPress = true;
+            }
+            return; // Don't drag before long press is confirmed
+        }
+
+        if (mobileDragState.isLongPressActive) {
+            e.preventDefault(); // Prevent page scrolling when dragging the button
+
+            if (!mobileDragState.isDragging) {
+                mobileDragState.isDragging = true;
+                // Ensure transition is off for dragging (should be from the post-scale timeout)
+                // menuTrigger.style.transition = 'none';
+                document.body.style.userSelect = 'none';
+                document.body.style.webkitUserSelect = 'none'; // For Safari
+            }
+
+            const deltaX = touch.clientX - mobileDragState.startX;
+            const deltaY = touch.clientY - mobileDragState.startY;
+
+            let newLeft = mobileDragState.initialElemX + deltaX;
+            let newTop = mobileDragState.initialElemY + deltaY;
+            // Constrain movement to within the viewport
+            // With transform-origin: 0 0, newLeft/newTop directly map to visual top-left of scaled element
+            const currentTriggerRect = menuTrigger.getBoundingClientRect(); // Gets current visual dimensions (scaled)
+
+            if (newLeft < 0) newLeft = 0;
+            if (newTop < 0) newTop = 0;
+            if (newLeft + currentTriggerRect.width > window.innerWidth) newLeft = window.innerWidth - currentTriggerRect.width;
+            if (newTop + currentTriggerRect.height > window.innerHeight) newTop = window.innerHeight - currentTriggerRect.height;
+
+            menuTrigger.style.left = newLeft + 'px';
+            menuTrigger.style.top = newTop + 'px';
+        }
+    }, { passive: false }); // passive: false for e.preventDefault()
+
+    document.addEventListener('touchend', (e) => {
+        const wasLongPressAttemptedOrActive = mobileDragState.longPressTimer || mobileDragState.isLongPressActive || mobileDragState.hasMovedTooMuchForLongPress;
+        const wasActuallyDragging = mobileDragState.isDragging;
+
+        if (mobileDragState.longPressTimer) {
+            clearTimeout(mobileDragState.longPressTimer);
+            mobileDragState.longPressTimer = null;
+        }
+
+        if (mobileDragState.isLongPressActive) { // If button was scaled due to long press
+            menuTrigger.style.transition = 'transform 0.2s ease-out'; // Transition for reverting scale
+            menuTrigger.style.transform = 'scale(1)';
+            menuTrigger.style.cursor = 'pointer';
+            menuTrigger.style.transformOrigin = mobileDragState.originalTransformOrigin; // Restore original
+
+            // After scale-down animation, restore original inline transition (or clear if none)
+            setTimeout(() => {
+                // Only restore if not immediately starting another touch interaction
+                if (!mobileDragState.isLongPressActive && !mobileDragState.isDragging) {
+                   menuTrigger.style.transition = mobileDragState.triggerInitialTransition;
+                }
+            }, 200); // Duration of scale animation
+        }
+
+        if (wasActuallyDragging) {
+            e.preventDefault(); // IMPORTANT: Prevents click event from firing after a drag
+            document.body.style.userSelect = '';
+            document.body.style.webkitUserSelect = '';
+        }
+
+        // Reset states for the next touch interaction
+        mobileDragState.isLongPressActive = false;
+        mobileDragState.isDragging = false;
+        mobileDragState.hasMovedTooMuchForLongPress = false;
+        // Other states like startX/Y, initialElemX/Y are set at the beginning of the next touchstart.
+    });
+
+
+    // --- Create Menu Container ---
+    const menuContainer = document.createElement('div');
+    menuContainer.id = 'custom-bm-menu-container';
+    document.body.appendChild(menuContainer);
+
+    // --- Populate Menu ---
+
+    // Helper function to run a bookmarklet and then hide the menu
+    function runBookmarkletAndHideMenu(bookmarklet) {
+        try {
+            bookmarklet.code();
+        } catch (e) {
+            console.error("Error executing bookmarklet '" + bookmarklet.name + "':", e);
+            alert("Error in bookmarklet '" + bookmarklet.name + "': " + e.message);
+            showStatusMessage("Error in: " + bookmarklet.name, 3000, true);
+        }
+        menuContainer.style.display = 'none'; // Hide menu after action
+        menuVisible = false;
+    }
+
+    // Helper function to select all text on the page
+    function selectAllPageText() {
+        try {
+            const selection = window.getSelection();
+            if (!selection) return false;
+
+            // Temporarily hide our own elements to exclude them from selection
+            const menuTrigger = document.getElementById('custom-bm-menu-trigger');
+            const menuContainer = document.getElementById('custom-bm-menu-container');
+            const statusMsg = document.getElementById('custom-bm-status-msg');
+            const geminiNotification = document.getElementById('custom-gemini-notification-box');
+
+            const elementsToHide = [menuTrigger, menuContainer, statusMsg, geminiNotification].filter(el => el);
+            const originalStyles = elementsToHide.map(el => el.style.display);
+
+            // Hide elements
+            elementsToHide.forEach(el => el.style.display = 'none');
+
+            const range = document.createRange();
+            range.selectNodeContents(document.body);
+            selection.removeAllRanges(); // Clear any previous selection
+            selection.addRange(range);   // Add the new range
+
+            // Restore elements
+            elementsToHide.forEach((el, i) => el.style.display = originalStyles[i]);
+
+            return true;
+        } catch (e) {
+            console.error("Error selecting all text:", e);
+            showStatusMessage("Could not select page text.", 3000, true);
+            return false;
+        }
+    }
+
+    const selectionEnabledBookmarklets = new Set([
+        "✨ SUMMARIZE",
+        "💬 Talk to ChatGPT",
+        "🍊 ask Claude",
+        "🔷 Copy Gemini Prompt"
+    ]);
+
+    bookmarklets.forEach((bm, index) => {
+        const menuItem = document.createElement('a');
+        menuItem.href = '#';
+        menuItem.className = 'custom-bm-menu-item';
+
+        // Set the main text of the button
+        const nameText = document.createTextNode(bm.name);
+        menuItem.appendChild(nameText);
+
+        // Add the main click listener to the entire item
+        menuItem.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            runBookmarkletAndHideMenu(bm);
+        });
+
+        // If the bookmarklet supports selection, add the (selectAll) button
+        if (selectionEnabledBookmarklets.has(bm.name)) {
+            const selectAllBtn = document.createElement('span');
+            selectAllBtn.textContent = '(selectAll)';
+            selectAllBtn.className = 'custom-bm-select-all';
+
+            selectAllBtn.addEventListener('click', function(event) {
+                event.preventDefault();
+                event.stopPropagation(); // CRITICAL: Prevent the parent menu item's click handler from firing
+
+                if (selectAllPageText()) {
+                    // A small delay helps ensure the OS has registered the new selection
+                    // before the bookmarklet's code tries to read it.
+                    setTimeout(() => {
+                        runBookmarkletAndHideMenu(bm);
+                    }, 50);
+                }
+            });
+            menuItem.appendChild(selectAllBtn);
+        }
+
+        menuContainer.appendChild(menuItem);
+
+        // Add separator after basket items
+        if (index === basketBookmarklets.length - 1) {
+            const separator = document.createElement('div');
+            separator.className = 'custom-bm-separator';
+            menuContainer.appendChild(separator);
+        }
+    });
+
+    // --- Toggle Menu ---
+    let menuVisible = false;
+    menuTrigger.addEventListener('click', function(event) {
+        if (dragState.isActuallyDragging) { // If a DESKTOP drag operation just finished for the trigger
+            dragState.isActuallyDragging = false; // Reset the flag for the next interaction
+            event.stopPropagation(); // Prevent menu toggle
+            return;
+        }
+        // Note: For MOBILE drags, `touchend` calls `e.preventDefault()`, which should stop this click event.
+        // If it's a simple mobile tap (no drag, no long press that led to drag), click proceeds.
+        event.stopPropagation(); // Prevent click from bubbling up further
+
+        if (menuVisible) {
+            menuContainer.style.display = 'none';
+            menuVisible = false;
+        } else {
+            const triggerRect = menuTrigger.getBoundingClientRect();
+            menuContainer.style.display = 'block'; // Show first to get its dimensions for positioning
+
+            // Default: position menu above and centered with the trigger
+            let menuTop = triggerRect.top - menuContainer.offsetHeight - 10; // 10px spacing
+            let menuLeft = triggerRect.left + (triggerRect.width / 2) - (menuContainer.offsetWidth / 2);
+            // Adjust if menu goes off-screen
+            if (menuLeft < 5) menuLeft = 5; // Too far left
+            if (menuLeft + menuContainer.offsetWidth > window.innerWidth - 5) { // Too far right
+                menuLeft = window.innerWidth - menuContainer.offsetWidth - 5;
+            }
+            if (menuTop < 5) { // Too high (menu would be off top of screen)
+                // Try positioning below the trigger instead
+                menuTop = triggerRect.bottom + 10;
+                if (menuTop + menuContainer.offsetHeight > window.innerHeight - 5) { // Still too low
+                    // As a last resort, try to fit it by reducing its max height or centering vertically
+                    menuTop = Math.max(5, (window.innerHeight - menuContainer.offsetHeight) / 2);
+                }
+            }
+
+            menuContainer.style.top = menuTop + 'px';
+            menuContainer.style.left = menuLeft + 'px';
+            menuContainer.style.bottom = 'auto'; // We are using top/left
+            menuContainer.style.right = 'auto';
+            menuVisible = true;
+        }
+    });
+
+    // Close menu if clicking outside
+    document.addEventListener('click', function(event) {
+        if (menuVisible && !menuContainer.contains(event.target) && !menuTrigger.contains(event.target)) {
+            menuContainer.style.display = 'none';
+            menuVisible = false;
+        }
+    });
+    // --- Add Styles ---
+    GM_addStyle(`
+        #custom-bm-menu-trigger {
+            position: fixed;
+            /* Initial position set by CSS, draggable logic will override with left/top */
+            bottom: 80px;
+            right: 20px;
+            background-color: rgba(150, 150, 150, 0.2); /* Slightly darker semi-transparent grey */
+            color: white;
+            padding: 10px 15px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px; /* Slightly larger icon */
+            z-index: 99998;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            user-select: none; /* Crucial for dragging */
+            -webkit-user-select: none; /* Safari */
+            backdrop-filter: blur(4px); /* Enhanced frosted glass */
+            transition: background-color 0.2s; /* Smooth hover effect - note: JS might override this temporarily */
+        }
+        #custom-bm-menu-trigger:hover {
+            background-color: rgba(120, 120, 120, 0.2);
+        }
+        #custom-bm-menu-container {
+            display: none;
+            position: fixed; /* top/left will be set by JS */
+            background-color: #ffffff;
+            border: 1px solid #d0d0d0; /* Softer border */
+            border-radius: 10px; /* More rounded */
+            z-index: 99999;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15); /* Softer, more spread shadow */
+            padding: 10px 0; /* More vertical padding for items */
+            min-width: 230px;
+        }
+        .custom-bm-menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 13px 25px; /* More padding for easier clicking */
+            text-decoration: none;
+            color: #333333;
+            white-space: nowrap;
+            font-size: 15px; /* Clearer font size */
+            transition: background-color 0.15s, color 0.15s; /* Smooth hover */
+            cursor: pointer;
+        }
+        .custom-bm-menu-item:hover {
+            background-color: #f2f2f2; /* Lighter hover */
+            color: #000000;
+        }
+        .custom-bm-select-all {
+            color: #007bff;
+            font-weight: 500;
+            margin-left: 15px;
+            text-decoration: none;
+            border: 1px dashed #007bff;
+            padding: 2px 6px;
+            border-radius: 9999px;
+        }
+        .custom-bm-select-all:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+        .custom-bm-separator {
+            height: 1px;
+            background-color: #e0e0e0;
+            margin: 8px 15px;
+        }
+    `);
+
+})();
