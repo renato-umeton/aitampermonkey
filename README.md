@@ -1,9 +1,13 @@
 # AI Tampermonkey Bookmarklet Menu
 
+_An AI in your corner, whereever you go._
+
+![](docs/screenshots/iphone.mp4)
+
+<img width="200" alt="image" src="https://github.com/user-attachments/assets/7ec47418-6326-4806-8b36-3bab4cb9d195" /> &nbsp;
+<img width="200" alt="image" src="https://github.com/user-attachments/assets/796cbbd8-7480-489d-9b58-7ec9206d8ca6" />
 
 
-This repository contains a series of Tampermonkey userscripts that display a floating bookmarklet menu.
-Each version builds upon the previous one with additional utilities and styling tweaks.
 
 ## Requirements
 
