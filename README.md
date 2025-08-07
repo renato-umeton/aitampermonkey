@@ -1,6 +1,6 @@
 # AI Tampermonkey Bookmarklet Menu
 
-_An AI in your corner, wherever you go._
+_All AIs in your corner, wherever you are._
 
 ![](docs/screenshots/iphone.gif)
 
@@ -8,9 +8,6 @@ _An AI in your corner, wherever you go._
 ## Functionalities (v2.8)
 
 - **Floating Menu:** A draggable trigger icon (📟) provides access to all features.
-- **URL Basket:**
-    - Collect multiple pages into a "basket".
-    - View, clear, or send the entire basket to AI services for analysis.
 - **AI Integration:**
     - **ChatGPT, Claude, Gemini:** Send the current page, selected text, or URL basket to various AI chatbots.
     - **Kagi Summarizer:** Summarize the current page, selected text, or all pages in the basket.
@@ -27,9 +24,11 @@ _An AI in your corner, wherever you go._
     - Status messages and custom notifications for actions.
     - Automatic dark/light theme based on your browser or OS settings.
     - Option to permanently hide the trigger icon.
-
+ **URL Basket:**
+    - Collect multiple pages into a "basket".
+    - View, clear, or send the entire basket to AI services for analysis.
+      
 Feel free to experiment with older versions to see how the menu evolved.
-
 
 <img width="200" alt="image" src="https://github.com/user-attachments/assets/7ec47418-6326-4806-8b36-3bab4cb9d195" /> &nbsp;
 <img width="200" alt="image" src="https://github.com/user-attachments/assets/796cbbd8-7480-489d-9b58-7ec9206d8ca6" />
