@@ -24,7 +24,7 @@ _All AIs in your corner, wherever you are._
     - Status messages and custom notifications for actions.
     - Automatic dark/light theme based on your browser or OS settings.
     - Option to permanently hide the trigger icon.
- **URL Basket:**
+ - **URL Basket:**
     - Collect multiple pages into a "basket".
     - View, clear, or send the entire basket to AI services for analysis.
       
