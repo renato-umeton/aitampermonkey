@@ -7,7 +7,7 @@ Each version builds upon the previous one with additional utilities and styling 
 
 -   **Android, Linux, macOS, Windows:** Firefox or a Chromium-based browser with the Tampermonkey extension, plus the script.
 -   **iPhone, iPad:** The Tampermonkey app, plus the script.
--   **Optional:** A Google AI Studio API key for the "Generate & Run Code" feature.
+-   **Optional:** A [Google AI Studio API key](https://aistudio.google.com/app/apikey) for the "Generate & Run Code" feature.
 
 ## Script versions
 
