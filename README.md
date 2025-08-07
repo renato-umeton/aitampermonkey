@@ -4,25 +4,6 @@ _An AI in your corner, wherever you go._
 
 ![](docs/screenshots/iphone.gif)
 
-<img width="200" alt="image" src="https://github.com/user-attachments/assets/7ec47418-6326-4806-8b36-3bab4cb9d195" /> &nbsp;
-<img width="200" alt="image" src="https://github.com/user-attachments/assets/796cbbd8-7480-489d-9b58-7ec9206d8ca6" />
-
-
-
-## Requirements
-
--   **Android, Linux, macOS, Windows:** Firefox or a Chromium-based browser with the Tampermonkey extension, plus the script.
--   **iPhone, iPad:** The Tampermonkey app, plus the script.
--   **Optional:**
-    - A free [Google AI Studio API key](https://aistudio.google.com/app/apikey) for the "🤖 Generate & Run Code" feature.
-    - A free [Kagi]([url](https://kagi.com/signup)) account to use the "✨ SUMMARIZE" feature 
-
-## Installing
-
-1. Install the Tampermonkey extension in your browser.
-2. Open the script file you wish to use and copy its contents.
-3. Create a new script in Tampermonkey and paste the code, then save.
-4. Reload the page to see the menu trigger.
 
 ## Functionalities (v2.8)
 
@@ -48,6 +29,28 @@ _An AI in your corner, wherever you go._
     - Option to permanently hide the trigger icon.
 
 Feel free to experiment with older versions to see how the menu evolved.
+
+
+<img width="200" alt="image" src="https://github.com/user-attachments/assets/7ec47418-6326-4806-8b36-3bab4cb9d195" /> &nbsp;
+<img width="200" alt="image" src="https://github.com/user-attachments/assets/796cbbd8-7480-489d-9b58-7ec9206d8ca6" />
+
+
+## Requirements
+
+-   **Android, Linux, macOS, Windows:** Firefox or a Chromium-based browser with the Tampermonkey extension, plus the script.
+-   **iPhone, iPad:** The Tampermonkey app, plus the script.
+-   **Optional:**
+    - A free [Google AI Studio API key](https://aistudio.google.com/app/apikey) for the "🤖 Generate & Run Code" feature.
+    - A free [Kagi]([url](https://kagi.com/signup)) account to use the "✨ SUMMARIZE" feature 
+
+## Installing
+
+1. Install the Tampermonkey extension in your browser.
+2. Open the script file you wish to use and copy its contents.
+3. Create a new script in Tampermonkey and paste the code, then save.
+4. Reload the page to see the menu trigger.
+
+---
 
 ## Script versions
 
