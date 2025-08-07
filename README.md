@@ -9,6 +9,38 @@ Each version builds upon the previous one with additional utilities and styling 
 -   **iPhone, iPad:** The Tampermonkey app, plus the script.
 -   **Optional:** A [Google AI Studio API key](https://aistudio.google.com/app/apikey) for the "Generate & Run Code" feature.
 
+## Installing
+
+1. Install the Tampermonkey extension in your browser.
+2. Open the script file you wish to use and copy its contents.
+3. Create a new script in Tampermonkey and paste the code, then save.
+4. Reload the page to see the menu trigger.
+
+## Functionalities (v2.8)
+
+- **Floating Menu:** A draggable trigger icon (📟) provides access to all features.
+- **URL Basket:**
+    - Collect multiple pages into a "basket".
+    - View, clear, or send the entire basket to AI services for analysis.
+- **AI Integration:**
+    - **ChatGPT, Claude, Gemini:** Send the current page, selected text, or URL basket to various AI chatbots.
+    - **Kagi Summarizer:** Summarize the current page, selected text, or all pages in the basket.
+- **Gemini Code Generation:**
+    - Describe a desired webpage change in plain English (e.g., "highlight all links in red").
+    - The script uses the Gemini API to generate JavaScript code to accomplish the task.
+    - Review the code and choose to execute it, copy it, or cancel. Requires a free Google AI Studio API key.
+- **Page Utilities:**
+    - **Save as Markdown:** Converts the main content of a page to Markdown and downloads it.
+    - **sortScholar:** Re-sorts Google Scholar results by citation count.
+    - **Get it at Harvard!:** Accesses the current page through Harvard's library proxy.
+- **UI/UX Features:**
+    - `(selectAll)` buttons for easily using full page content as context.
+    - Status messages and custom notifications for actions.
+    - Automatic dark/light theme based on your browser or OS settings.
+    - Option to permanently hide the trigger icon.
+
+Feel free to experiment with older versions to see how the menu evolved.
+
 ## Script versions
 
 Below is a summary of each numbered release, with the latest version first. File names use a two‑digit prefix to keep them sorted.
@@ -93,34 +125,3 @@ Below is a summary of each numbered release, with the latest version first. File
 - Basic menu with Kagi "Summarize" bookmarklet
 - Quick links for ChatGPT and Gemini
 
-## Installing
-
-1. Install the Tampermonkey extension in your browser.
-2. Open the script file you wish to use and copy its contents.
-3. Create a new script in Tampermonkey and paste the code, then save.
-4. Reload the page to see the menu trigger.
-
-## Functionalities (v2.8)
-
-- **Floating Menu:** A draggable trigger icon (📟) provides access to all features.
-- **URL Basket:**
-    - Collect multiple pages into a "basket".
-    - View, clear, or send the entire basket to AI services for analysis.
-- **AI Integration:**
-    - **ChatGPT, Claude, Gemini:** Send the current page, selected text, or URL basket to various AI chatbots.
-    - **Kagi Summarizer:** Summarize the current page, selected text, or all pages in the basket.
-- **Gemini Code Generation:**
-    - Describe a desired webpage change in plain English (e.g., "highlight all links in red").
-    - The script uses the Gemini API to generate JavaScript code to accomplish the task.
-    - Review the code and choose to execute it, copy it, or cancel. Requires a free Google AI Studio API key.
-- **Page Utilities:**
-    - **Save as Markdown:** Converts the main content of a page to Markdown and downloads it.
-    - **sortScholar:** Re-sorts Google Scholar results by citation count.
-    - **Get it at Harvard!:** Accesses the current page through Harvard's library proxy.
-- **UI/UX Features:**
-    - `(selectAll)` buttons for easily using full page content as context.
-    - Status messages and custom notifications for actions.
-    - Automatic dark/light theme based on your browser or OS settings.
-    - Option to permanently hide the trigger icon.
-
-Feel free to experiment with older versions to see how the menu evolved.
