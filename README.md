@@ -1,8 +1,8 @@
 # AI Tampermonkey Bookmarklet Menu
 
-_An AI in your corner, whereever you go._
+_An AI in your corner, wherever you go._
 
-![](docs/screenshots/iphone.mp4)
+![](docs/screenshots/iphone.gif)
 
 <img width="200" alt="image" src="https://github.com/user-attachments/assets/7ec47418-6326-4806-8b36-3bab4cb9d195" /> &nbsp;
 <img width="200" alt="image" src="https://github.com/user-attachments/assets/796cbbd8-7480-489d-9b58-7ec9206d8ca6" />
@@ -13,7 +13,9 @@ _An AI in your corner, whereever you go._
 
 -   **Android, Linux, macOS, Windows:** Firefox or a Chromium-based browser with the Tampermonkey extension, plus the script.
 -   **iPhone, iPad:** The Tampermonkey app, plus the script.
--   **Optional:** A [Google AI Studio API key](https://aistudio.google.com/app/apikey) for the "Generate & Run Code" feature.
+-   **Optional:**
+    - A free [Google AI Studio API key](https://aistudio.google.com/app/apikey) for the "🤖 Generate & Run Code" feature.
+    - A free [Kagi]([url](https://kagi.com/signup)) account to use the "✨ SUMMARIZE" feature 
 
 ## Installing
 
