@@ -5,7 +5,7 @@ _All AIs in your corner, wherever you are._
 ![](docs/screenshots/iphone.gif)
 
 
-## Functionalities (v2.8)
+## Functionalities (v2.9)
 
 - **Floating Menu:** A draggable trigger icon (📟) provides access to all features.
 - **AI Integration:**
@@ -57,7 +57,8 @@ Below is a summary of each numbered release, with the latest version first. File
 
 | Version | File | Key additions |
 | ------- | ---- | ------------- |
-| 2.8 | `28 Universal Bookmarklet Menu-2.8.user(2).txt` | Dark mode, "Hide Menu" option, submenu styling (latest) |
+| 2.9 | `29 Universal Bookmarklet Menu-2.9.user.txt` | Updated Gemini API (2.5-flash), improved submenu UX with safe corridor (latest) |
+| 2.8 | `28 Universal Bookmarklet Menu-2.8.user.txt` | Dark mode, "Hide Menu" option, submenu styling |
 | 2.7 | `27 Universal Bookmarklet Menu-2.7.user.txt` | Submenu for basket actions |
 | 2.6 | `26 Universal Bookmarklet Menu-2.6.user.txt` | URL Basket for multi-page actions |
 | 2.4 | `24 Universal Bookmarklet Menu-2.4.user.txt` | Flexbox layout for menu items |
@@ -75,6 +76,12 @@ Below is a summary of each numbered release, with the latest version first. File
 | 1.2 | `02 Universal Bookmarklet Menu-1.2.user.txt` | Initial menu with Kagi “Summarize”, ChatGPT and Gemini links |
 
 ### Detailed changelog
+
+**2.9**
+- Updated Gemini API to use gemini-2.5-flash model (gemini-1.5-flash deprecated)
+- Improved submenu UX: left-half activation with visual safe corridor on right
+- Arrow icon repositioned to beginning of "multi-page & more" menu item
+- Safe corridor prevents accidental submenu activation when moving mouse vertically
 
 **2.8**
 - Added automatic dark mode based on system preference

@@ -1,1 +1,26 @@
 .DS_Store
+
+# Environment files
+*.env
+*.env.*
+.env.local
+.env.development
+.env.production
+
+# Credentials and secrets
+credentials.json
+secrets.json
+api_keys.txt
+*.key
+*.pem
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.log

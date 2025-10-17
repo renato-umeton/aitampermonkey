@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         28 Universal Bookmarklet Menu
+// @name         29 Universal Bookmarklet Menu
 // @namespace    http://tampermonkey.net/
-// @version      2.8
+// @version      2.9
 // @description  Shows a menu on tap with specified bookmarklets, with multi-page basket actions in a submenu.
 // @author       Renato (with additions by AI)
 // @match        *://*/*
@@ -174,7 +174,7 @@
 
     // --- Helper for Gemini API Call ---
     async function callGeminiAPI(prompt, apiKey) {
-        const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' + apiKey;
+        const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey;
         const requestBody = {
             contents: [{
                 parts: [{
@@ -1022,16 +1022,65 @@ Current page title: ${document.title}`;
     // --- Create Multi-Page Actions Submenu ---
     const multiPageActionsMenuItem = document.createElement('div');
     multiPageActionsMenuItem.className = 'custom-bm-menu-item custom-bm-has-submenu';
-    multiPageActionsMenuItem.innerHTML = '🛒 multi-page & more <span class="submenu-arrow">▾</span>';
-    multiPageActionsMenuItem.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-    });
+    multiPageActionsMenuItem.innerHTML = '<span class="submenu-arrow">▾</span> 🛒 multi-page, etc.';
+
     menuContainer.appendChild(multiPageActionsMenuItem);
 
     const submenuContainer = document.createElement('div');
     submenuContainer.className = 'custom-bm-submenu';
     multiPageActionsMenuItem.appendChild(submenuContainer);
+
+    // Override CSS hover behavior with JavaScript to only show submenu on left half
+    let submenuVisible = false;
+
+    multiPageActionsMenuItem.addEventListener('mouseenter', () => {
+        // Don't do anything on enter - wait for mousemove
+    });
+
+    multiPageActionsMenuItem.addEventListener('mousemove', (event) => {
+        const rect = multiPageActionsMenuItem.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const halfWidth = rect.width / 2;
+
+        if (mouseX <= halfWidth) {
+            // Left half - show submenu and allow hover background
+            if (!submenuVisible) {
+                submenuContainer.style.display = 'block';
+                submenuVisible = true;
+            }
+            multiPageActionsMenuItem.style.backgroundColor = '';
+            multiPageActionsMenuItem.style.pointerEvents = '';
+        } else {
+            // Right half - hide submenu and remove hover background
+            if (submenuVisible) {
+                submenuContainer.style.display = 'none';
+                submenuVisible = false;
+            }
+            multiPageActionsMenuItem.style.backgroundColor = 'transparent';
+        }
+    });
+
+    multiPageActionsMenuItem.addEventListener('mouseleave', (event) => {
+        // Check if we're moving to the submenu
+        const relatedTarget = event.relatedTarget;
+        if (!submenuContainer.contains(relatedTarget)) {
+            submenuContainer.style.display = 'none';
+            submenuVisible = false;
+        }
+        // Reset background color when leaving the item
+        multiPageActionsMenuItem.style.backgroundColor = '';
+    });
+
+    // Keep submenu open when hovering over it
+    submenuContainer.addEventListener('mouseenter', () => {
+        submenuContainer.style.display = 'block';
+        submenuVisible = true;
+    });
+
+    submenuContainer.addEventListener('mouseleave', () => {
+        submenuContainer.style.display = 'none';
+        submenuVisible = false;
+    });
 
     basketBookmarklets.forEach(bm => {
         const menuItem = document.createElement('a');
@@ -1054,11 +1103,13 @@ Current page title: ${document.title}`;
     hideAppMenuItem.addEventListener('click', function(event) {
         event.preventDefault();
         event.stopPropagation();
-        if (confirm('Are you sure you want to hide the menu trigger permanently? You will need to re-install the script to see it again.')) {
-            document.getElementById('custom-bm-menu-trigger').style.display = 'none';
-            document.getElementById('custom-bm-menu-container').style.display = 'none';
-            menuVisible = false;
-        }
+        
+        document.getElementById('custom-bm-menu-trigger').style.display = 'none';
+
+        document.getElementById('custom-bm-menu-container').style.display = 'none';
+        
+        menuVisible = false;
+        
     });
     submenuContainer.appendChild(hideAppMenuItem);
 
@@ -1183,13 +1234,10 @@ Current page title: ${document.title}`;
         }
         .custom-bm-has-submenu {
             position: relative;
-        }
-        .custom-bm-has-submenu:hover > .custom-bm-submenu {
-            display: block;
+            justify-content: flex-start;
         }
         .submenu-arrow {
-            margin-left: auto;
-            padding-left: 15px;
+            margin-right: 10px;
             font-size: 18px;
             color: var(--arrow-color);
         }
