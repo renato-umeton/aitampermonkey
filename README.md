@@ -36,15 +36,15 @@ Feel free to experiment with older versions to see how the menu evolved.
 
 ## Requirements
 
--   **Android, Linux, macOS, Windows:** Firefox or a Chromium-based browser with the Tampermonkey extension, plus the script.
--   **iPhone, iPad:** The Tampermonkey app, plus the script.
+-   **Android, Linux, macOS, Windows:** Firefox or a Chromium-based browser with the [Tampermonkey](https://www.tampermonkey.net/) extension, plus the script.
+-   **iPhone, iPad:** The [Tampermonkey app](https://www.tampermonkey.net/), plus the script.
 -   **Optional:**
     - A free [Google AI Studio API key](https://aistudio.google.com/app/apikey) for the "🤖 Generate & Run Code" feature.
     - A free [Kagi]([url](https://kagi.com/signup)) account to use the "✨ SUMMARIZE" feature 
 
 ## Installing
 
-1. Install the Tampermonkey extension in your browser.
+1. Install the [Tampermonkey](https://www.tampermonkey.net/) extension in your browser.
 2. Open the script file you wish to use and copy its contents.
 3. Create a new script in Tampermonkey and paste the code, then save.
 4. Reload the page to see the menu trigger.
