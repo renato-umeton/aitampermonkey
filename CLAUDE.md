@@ -15,6 +15,7 @@ This repository contains Tampermonkey userscripts that create a floating bookmar
 **Bookmarklet Framework**: Scripts define bookmarklets as objects with `name` and `code` properties. The `code` function executes when the bookmarklet is selected.
 
 **Status Messaging**: Two notification systems:
+
 - Generic status messages (green/red, bottom-center) via `showStatusMessage()`
 - Custom Gemini notifications (blue gradient, bottom-right) via `showCustomGeminiNotification()`
 
@@ -27,37 +28,56 @@ This repository contains Tampermonkey userscripts that create a floating bookmar
 - **Version 2.0**: Video link extraction (`mp4[0]` bookmarklet)
 - **Version 2.2**: Gemini API integration with local API key storage
 - **Version 2.3**: "Select All" helper buttons for selection-aware bookmarklets
-- **Version 2.4**: Flexbox menu layout (latest)
+- **Version 2.4**: Flexbox menu layout
+- **Version 2.6**: URL Basket for collecting and batch-processing multiple pages
+- **Version 2.7**: Collapsible submenu for basket actions
+- **Version 2.8**: Dark mode, "Hide Menu" option, improved submenu styling (latest)
 
 ### Selection-Aware Bookmarklets
 
 Scripts in `selectionEnabledBookmarklets` set can work with selected text or full page content:
-- ✨ SUMMARIZE
-- 💬 Talk to ChatGPT  
+
+- ✨ SUMMARIZE (Kagi Summarizer)
+- 💬 Talk to ChatGPT
 - 🍊 ask Claude
 - 🔷 Copy Gemini Prompt
 
 These automatically get "(selectAll)" helper buttons that select all page text before execution.
 
+### URL Basket System
+
+Version 2.6+ includes a multi-page collection system:
+
+- Users can add current page URLs to a persistent basket (stored via `GM_setValue`)
+- Basket actions available in submenu: view count, clear basket, send to AI services
+- Basket URLs can be batch-processed (summarize all, send all to ChatGPT/Claude/Gemini)
+- Kagi integration requires a free Kagi account
+
 ### API Integration
 
 **Gemini API**: Version 2.2+ includes full Gemini API integration:
+
 - API key management via `GM_setValue/GM_getValue`
 - Code generation and execution with safety prompts
 - Error handling for various API failure modes (403, 429, 400, network errors)
 
 ## File Structure
 
-Scripts use a two-digit prefix naming convention for chronological ordering. The latest version is always `24 Universal Bookmarklet Menu-2.4.user.txt`.
+Scripts use a two-digit prefix naming convention for chronological ordering. Current latest: `29 Universal Bookmarklet Menu-2.9.user.txt`. Historical versions are moved to `previous-versions/` directory.
 
 ## Development Notes
 
 **No Build Process**: These are standalone Tampermonkey userscripts - no package.json, build tools, or dependencies beyond Tampermonkey grants and external CDN libraries (TurndownService).
 
-**External Dependencies**: 
+**External Dependencies**:
+
 - TurndownService (CDN) for HTML-to-Markdown conversion
 - Tampermonkey grants: `GM_addStyle`, `GM_setValue`, `GM_getValue`, `GM_xmlhttpRequest`
 
 **Testing**: Manual testing in browser with Tampermonkey extension. Test drag functionality on both desktop and mobile devices.
 
 **Code Style**: ES6+ JavaScript with async/await for API calls. Uses modern DOM methods and CSS-in-JS styling via `GM_addStyle`.
+
+**Theme Support**: Version 2.8+ includes automatic dark/light mode detection via `window.matchMedia('(prefers-color-scheme: dark)')`. Menu styles adapt to system preferences.
+
+**Version Management**: When creating new versions, move the previous version to `previous-versions/` directory and update README.md with the new version number and changelog.
