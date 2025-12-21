@@ -32,7 +32,8 @@ This repository contains Tampermonkey userscripts that create a floating bookmar
 - **Version 2.6**: URL Basket for collecting and batch-processing multiple pages
 - **Version 2.7**: Collapsible submenu for basket actions
 - **Version 2.8**: Dark mode, "Hide Menu" option, improved submenu styling
-- **Version 2.9**: Updated to gemini-2.5-flash model, submenu UX with safe corridor (latest)
+- **Version 2.9**: Updated to gemini-2.5-flash model, submenu UX with safe corridor
+- **Version 3.0**: Updated to gemini-3-flash-preview model (latest)
 
 ### Selection-Aware Bookmarklets
 
@@ -58,7 +59,7 @@ Version 2.6+ includes a multi-page collection system:
 
 **Gemini API**: Version 2.2+ includes full Gemini API integration:
 
-- Uses `gemini-2.5-flash` model (updated from deprecated gemini-1.5-flash in v2.9)
+- Uses `gemini-3-flash-preview` model (updated in v3.0)
 - API key management via `GM_setValue/GM_getValue`
 - Code generation and execution with safety prompts
 - Error handling for various API failure modes (403, 429, 400, network errors)
@@ -71,7 +72,7 @@ The "multi-page, etc." submenu uses a split-zone hover behavior:
 
 ## File Structure
 
-Scripts use a two-digit prefix naming convention for chronological ordering. Current latest: `29 Universal Bookmarklet Menu-2.9.user.txt`. Historical versions are moved to `previous-versions/` directory.
+Scripts use a two-digit prefix naming convention for chronological ordering. Current latest: `30 Universal Bookmarklet Menu-3.0.user.txt`. Historical versions are moved to `previous-versions/` directory.
 
 ## Development Notes
 

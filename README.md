@@ -5,7 +5,7 @@ _All AIs in your corner, wherever you are._
 ![](docs/screenshots/iphone.gif)
 
 
-## Functionalities (v2.9)
+## Functionalities (v3.0)
 
 - **Floating Menu:** A draggable trigger icon (📟) provides access to all features.
 - **AI Integration:**
@@ -57,7 +57,8 @@ Below is a summary of each numbered release, with the latest version first. File
 
 | Version | File | Key additions |
 | ------- | ---- | ------------- |
-| 2.9 | `29 Universal Bookmarklet Menu-2.9.user.txt` | Updated Gemini API (2.5-flash), improved submenu UX with safe corridor (latest) |
+| 3.0 | `30 Universal Bookmarklet Menu-3.0.user.txt` | Updated Gemini API to gemini-3-flash-preview (latest) |
+| 2.9 | `29 Universal Bookmarklet Menu-2.9.user.txt` | Updated Gemini API (2.5-flash), improved submenu UX with safe corridor |
 | 2.8 | `28 Universal Bookmarklet Menu-2.8.user.txt` | Dark mode, "Hide Menu" option, submenu styling |
 | 2.7 | `27 Universal Bookmarklet Menu-2.7.user.txt` | Submenu for basket actions |
 | 2.6 | `26 Universal Bookmarklet Menu-2.6.user.txt` | URL Basket for multi-page actions |
@@ -76,6 +77,9 @@ Below is a summary of each numbered release, with the latest version first. File
 | 1.2 | `02 Universal Bookmarklet Menu-1.2.user.txt` | Initial menu with Kagi “Summarize”, ChatGPT and Gemini links |
 
 ### Detailed changelog
+
+**3.0**
+- Updated Gemini API to use gemini-3-flash-preview model
 
 **2.9**
 - Updated Gemini API to use gemini-2.5-flash model (gemini-1.5-flash deprecated)
