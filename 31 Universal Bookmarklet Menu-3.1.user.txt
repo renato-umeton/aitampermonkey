@@ -481,7 +481,7 @@
                         const escapedSource = escapeHtml(sourceCode);
                         
                         // Create a new window/tab with the source code
-                        const newWindow = window.open('', '_blank');
+                        const newWindow = window.open('', '_blank', 'noopener,noreferrer');
                         if (newWindow) {
                             // Create a properly formatted HTML page to display the source
                             const displayHtml = `<!DOCTYPE html>
@@ -558,6 +558,8 @@
 </body>
 </html>`;
                             
+                            // Write the HTML to the new window
+                            // Note: document.write() is safe here as all dynamic content is escaped via escapeHtml()
                             newWindow.document.write(displayHtml);
                             newWindow.document.close();
                             showStatusMessage("Source code opened in new tab!", 2000);
