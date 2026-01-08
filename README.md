@@ -5,7 +5,7 @@ _All AIs in your corner, wherever you are._
 ![](docs/screenshots/iphone.gif)
 
 
-## Functionalities (v3.0)
+## Functionalities (v3.1)
 
 - **Floating Menu:** A draggable trigger icon (📟) provides access to all features.
 - **AI Integration:**
@@ -19,6 +19,7 @@ _All AIs in your corner, wherever you are._
     - **Save as Markdown:** Converts the main content of a page to Markdown and downloads it.
     - **sortScholar:** Re-sorts Google Scholar results by citation count.
     - **Get it at Harvard!:** Accesses the current page through Harvard's library proxy.
+    - **View Source:** Quick access to view the HTML source code of the current page.
 - **UI/UX Features:**
     - `(selectAll)` buttons for easily using full page content as context.
     - Status messages and custom notifications for actions.
@@ -57,6 +58,7 @@ Below is a summary of each numbered release, with the latest version first. File
 
 | Version | File | Key additions |
 | ------- | ---- | ------------- |
+| 3.1 | `31 Universal Bookmarklet Menu-3.1.user.txt` | Added "🖥️ View Source" button to view page HTML source |
 | 3.0 | `30 Universal Bookmarklet Menu-3.0.user.txt` | Updated Gemini API to gemini-3-flash-preview (latest) |
 | 2.9 | `29 Universal Bookmarklet Menu-2.9.user.txt` | Updated Gemini API (2.5-flash), improved submenu UX with safe corridor |
 | 2.8 | `28 Universal Bookmarklet Menu-2.8.user.txt` | Dark mode, "Hide Menu" option, submenu styling |
@@ -77,6 +79,9 @@ Below is a summary of each numbered release, with the latest version first. File
 | 1.2 | `02 Universal Bookmarklet Menu-1.2.user.txt` | Initial menu with Kagi “Summarize”, ChatGPT and Gemini links |
 
 ### Detailed changelog
+
+**3.1**
+- Added "🖥️ View Source" button to quickly view the HTML source code of the current page
 
 **3.0**
 - Updated Gemini API to use gemini-3-flash-preview model
