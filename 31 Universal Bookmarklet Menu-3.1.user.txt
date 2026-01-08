@@ -451,7 +451,119 @@
     }, {
         name: "🖥️ View Source",
         code: function() {
-            location.href = "view-source:" + location.href;
+            // Fetch the current page's HTML source and display it in a new tab
+            const currentUrl = location.href;
+            
+            // Create a loading message
+            showStatusMessage("Fetching page source...", 2000);
+            
+            // Use GM_xmlhttpRequest to fetch the page source
+            GM_xmlhttpRequest({
+                method: 'GET',
+                url: currentUrl,
+                onload: function(response) {
+                    try {
+                        // Get the HTML source
+                        const sourceCode = response.responseText;
+                        
+                        // Create a new window/tab with the source code
+                        const newWindow = window.open('', '_blank');
+                        if (newWindow) {
+                            // Create a properly formatted HTML page to display the source
+                            const displayHtml = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Source: ${document.title}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        pre {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            overflow: auto;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .header {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .header h2 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            color: #333;
+        }
+        .header p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1e1e1e;
+                color: #d4d4d4;
+            }
+            pre {
+                background-color: #2d2d2d;
+                border-color: #444;
+                color: #d4d4d4;
+            }
+            .header {
+                background-color: #2d2d2d;
+                border-color: #444;
+            }
+            .header h2 {
+                color: #d4d4d4;
+            }
+            .header p {
+                color: #888;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>🖥️ Page Source</h2>
+        <p><strong>URL:</strong> ${currentUrl}</p>
+        <p><strong>Title:</strong> ${document.title || 'Untitled'}</p>
+    </div>
+    <pre>${sourceCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+</body>
+</html>`;
+                            
+                            newWindow.document.write(displayHtml);
+                            newWindow.document.close();
+                            showStatusMessage("Source code opened in new tab!", 2000);
+                        } else {
+                            showStatusMessage("Failed to open new tab. Check popup blocker.", 3000, true);
+                        }
+                    } catch (error) {
+                        console.error("Error displaying source code:", error);
+                        showStatusMessage("Error displaying source code: " + error.message, 3000, true);
+                    }
+                },
+                onerror: function(error) {
+                    console.error("Error fetching source code:", error);
+                    showStatusMessage("Error fetching page source. Check console.", 3000, true);
+                },
+                ontimeout: function() {
+                    showStatusMessage("Request timeout - failed to fetch source code", 3000, true);
+                },
+                timeout: 10000 // 10 second timeout
+            });
         }
     }, {
         name: "🎞️ mp4[0]",
