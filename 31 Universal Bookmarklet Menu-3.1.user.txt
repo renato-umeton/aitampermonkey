@@ -454,6 +454,15 @@
             // Fetch the current page's HTML source and display it in a new tab
             const currentUrl = location.href;
             
+            // Helper function to escape HTML entities
+            function escapeHtml(text) {
+                return text.replace(/&/g, '&amp;')
+                          .replace(/</g, '&lt;')
+                          .replace(/>/g, '&gt;')
+                          .replace(/"/g, '&quot;')
+                          .replace(/'/g, '&#039;');
+            }
+            
             // Create a loading message
             showStatusMessage("Fetching page source...", 2000);
             
@@ -466,6 +475,11 @@
                         // Get the HTML source
                         const sourceCode = response.responseText;
                         
+                        // Escape HTML for safe display
+                        const escapedUrl = escapeHtml(currentUrl);
+                        const escapedTitle = escapeHtml(document.title || 'Untitled');
+                        const escapedSource = escapeHtml(sourceCode);
+                        
                         // Create a new window/tab with the source code
                         const newWindow = window.open('', '_blank');
                         if (newWindow) {
@@ -474,7 +488,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Source: ${document.title}</title>
+    <title>Source: ${escapedTitle}</title>
     <style>
         body {
             margin: 0;
@@ -537,10 +551,10 @@
 <body>
     <div class="header">
         <h2>🖥️ Page Source</h2>
-        <p><strong>URL:</strong> ${currentUrl}</p>
-        <p><strong>Title:</strong> ${document.title || 'Untitled'}</p>
+        <p><strong>URL:</strong> ${escapedUrl}</p>
+        <p><strong>Title:</strong> ${escapedTitle}</p>
     </div>
-    <pre>${sourceCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+    <pre>${escapedSource}</pre>
 </body>
 </html>`;
                             
