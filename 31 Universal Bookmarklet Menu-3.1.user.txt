@@ -481,7 +481,7 @@
                         const escapedSource = escapeHtml(sourceCode);
                         
                         // Create a new window/tab with the source code
-                        const newWindow = window.open('', '_blank', 'noopener,noreferrer');
+                        const newWindow = window.open('', '_blank');
                         if (newWindow) {
                             // Create a properly formatted HTML page to display the source
                             const displayHtml = `<!DOCTYPE html>
