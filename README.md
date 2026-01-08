@@ -52,102 +52,27 @@ Feel free to experiment with older versions to see how the menu evolved.
 
 ---
 
-## Script versions
+## Change log
 
-Below is a summary of each numbered release, with the latest version first. File names use a two‑digit prefix to keep them sorted.
-
-| Version | File | Key additions |
-| ------- | ---- | ------------- |
-| 3.1 | `31 Universal Bookmarklet Menu-3.1.user.txt` | Added "🖥️ View Source" button to view page HTML source |
-| 3.0 | `30 Universal Bookmarklet Menu-3.0.user.txt` | Updated Gemini API to gemini-3-flash-preview (latest) |
-| 2.9 | `29 Universal Bookmarklet Menu-2.9.user.txt` | Updated Gemini API (2.5-flash), improved submenu UX with safe corridor |
-| 2.8 | `28 Universal Bookmarklet Menu-2.8.user.txt` | Dark mode, "Hide Menu" option, submenu styling |
-| 2.7 | `27 Universal Bookmarklet Menu-2.7.user.txt` | Submenu for basket actions |
-| 2.6 | `26 Universal Bookmarklet Menu-2.6.user.txt` | URL Basket for multi-page actions |
-| 2.4 | `24 Universal Bookmarklet Menu-2.4.user.txt` | Flexbox layout for menu items |
-| 2.3 | `23 Universal Bookmarklet Menu-2.3.user.txt` | “Select All” helper buttons and menu refactor |
-| 2.2 | `22 Universal Bookmarklet Menu-2.2.user.txt` | Gemini Code Generator with API key storage |
-| 2.1 | `21 Universal Bookmarklet Menu-2.1.user.txt` | Adjusted mobile drag scale behaviour |
-| 2.0 | `20 Universal Bookmarklet Menu-2.0.user.txt` | Added `mp4[0]` bookmarklet for embedded video links |
-| 1.9 | `09 Universal Bookmarklet Menu-1.9.user.txt` | Minor tweaks and new icon for Gemini prompt |
-| 1.8 | `bookmarklet-menu-v8.js.txt` | Added “ask Claude” bookmarklet |
-| 1.7 | `07 Universal Bookmarklet Menu-1.7.user.txt` | Trigger styling tweaks and default placement change |
-| 1.6 | `06 Universal Bookmarklet Menu-1.6.user.txt` | Mobile drag support for the trigger |
-| 1.5 | `05 Universal Bookmarklet Menu-1.5.user.txt` | Draggable trigger, custom Gemini prompt copier with notification |
-| 1.4 | `04 Universal Bookmarklet Menu-1.4.user.txt` | Restored simple ChatGPT URL handling, updated Gemini β prompt, improved menu positioning |
-| 1.3 | `03 Universal Bookmarklet Menu-1.3.user.txt` | Status message helper, Gemini Omnibox experiment, open actions in new tabs |
-| 1.2 | `02 Universal Bookmarklet Menu-1.2.user.txt` | Initial menu with Kagi “Summarize”, ChatGPT and Gemini links |
-
-### Detailed changelog
-
-**3.1**
-- Added "🖥️ View Source" button to quickly view the HTML source code of the current page
-
-**3.0**
-- Updated Gemini API to use gemini-3-flash-preview model
-
-**2.9**
-- Updated Gemini API to use gemini-2.5-flash model (gemini-1.5-flash deprecated)
-- Improved submenu UX: left-half activation with visual safe corridor on right
-- Arrow icon repositioned to beginning of "multi-page & more" menu item
-- Safe corridor prevents accidental submenu activation when moving mouse vertically
-
-**2.8**
-- Added automatic dark mode based on system preference
-- Added a "Hide Menu App" option to the submenu
-- Improved submenu positioning and styling
-
-**2.7**
-- Refactored menu to move basket actions into a collapsible submenu
-
-**2.6**
-- Introduced URL Basket for collecting multiple pages
-- Added basket actions: Summarize, send to ChatGPT, Claude, and Gemini
-
-**2.4**
-- Menu items arranged using flexbox
-
-**2.3**
-- "Select All" helper buttons
-- Refactored menu creation logic
-
-**2.2**
-- Gemini Code Generator with local API key storage
-- Optional execution of generated code
-
-**2.1**
-- Adjusted scaling behaviour for mobile dragging
-
-**2.0**
-- New `mp4[0]` bookmarklet for embedded video links
-
-**1.9**
-- Minor tweaks and a new icon for Gemini link
-
-**1.8**
-- Added "ask Claude" bookmarklet
-
-**1.7**
-- Trigger style tweaks and new default placement
-
-**1.6**
-- Mobile drag support using long press
-
-**1.5**
-- Added draggable trigger button
-- Gemini prompt copier with notification overlay
-
-**1.4**
-- Restored simpler ChatGPT URL handling
-- Updated Gemini β prompt text
-- Improved menu positioning logic
-
-**1.3**
-- Helper to show temporary status messages
-- Experimental Gemini Omnibox approach
-- Opens bookmarklet actions in new tabs
-
-**1.2**
-- Basic menu with Kagi "Summarize" bookmarklet
-- Quick links for ChatGPT and Gemini
+| Version | File | Key additions | Details |
+| ------- | ---- | ------------- | ------- |
+| 3.1 | `31 Universal Bookmarklet Menu-3.1.user.txt` | View Source button | - Added "🖥️ View Source" button to quickly view the HTML source code of the current page |
+| 3.0 | `30 Universal Bookmarklet Menu-3.0.user.txt` | Gemini API update | - Updated Gemini API to use gemini-3-flash-preview model |
+| 2.9 | `29 Universal Bookmarklet Menu-2.9.user.txt` | Gemini API, submenu UX | - Updated Gemini API to use gemini-2.5-flash model (gemini-1.5-flash deprecated)<br>- Improved submenu UX: left-half activation with visual safe corridor on right<br>- Arrow icon repositioned to beginning of "multi-page & more" menu item<br>- Safe corridor prevents accidental submenu activation when moving mouse vertically |
+| 2.8 | `28 Universal Bookmarklet Menu-2.8.user.txt` | Dark mode, Hide Menu | - Added automatic dark mode based on system preference<br>- Added a "Hide Menu App" option to the submenu<br>- Improved submenu positioning and styling |
+| 2.7 | `27 Universal Bookmarklet Menu-2.7.user.txt` | Submenu | - Refactored menu to move basket actions into a collapsible submenu |
+| 2.6 | `26 Universal Bookmarklet Menu-2.6.user.txt` | URL Basket | - Introduced URL Basket for collecting multiple pages<br>- Added basket actions: Summarize, send to ChatGPT, Claude, and Gemini |
+| 2.4 | `24 Universal Bookmarklet Menu-2.4.user.txt` | Flexbox layout | - Menu items arranged using flexbox |
+| 2.3 | `23 Universal Bookmarklet Menu-2.3.user.txt` | Select All buttons | - "Select All" helper buttons<br>- Refactored menu creation logic |
+| 2.2 | `22 Universal Bookmarklet Menu-2.2.user.txt` | Gemini Code Generator | - Gemini Code Generator with local API key storage<br>- Optional execution of generated code |
+| 2.1 | `21 Universal Bookmarklet Menu-2.1.user.txt` | Mobile drag fix | - Adjusted scaling behaviour for mobile dragging |
+| 2.0 | `20 Universal Bookmarklet Menu-2.0.user.txt` | mp4[0] bookmarklet | - New `mp4[0]` bookmarklet for embedded video links |
+| 1.9 | `09 Universal Bookmarklet Menu-1.9.user.txt` | Minor tweaks | - Minor tweaks and a new icon for Gemini link |
+| 1.8 | `bookmarklet-menu-v8.js.txt` | Claude integration | - Added "ask Claude" bookmarklet |
+| 1.7 | `07 Universal Bookmarklet Menu-1.7.user.txt` | Trigger styling | - Trigger style tweaks and new default placement |
+| 1.6 | `06 Universal Bookmarklet Menu-1.6.user.txt` | Mobile drag | - Mobile drag support using long press |
+| 1.5 | `05 Universal Bookmarklet Menu-1.5.user.txt` | Draggable trigger | - Added draggable trigger button<br>- Gemini prompt copier with notification overlay |
+| 1.4 | `04 Universal Bookmarklet Menu-1.4.user.txt` | ChatGPT, Gemini, positioning | - Restored simpler ChatGPT URL handling<br>- Updated Gemini β prompt text<br>- Improved menu positioning logic |
+| 1.3 | `03 Universal Bookmarklet Menu-1.3.user.txt` | Status messages | - Helper to show temporary status messages<br>- Experimental Gemini Omnibox approach<br>- Opens bookmarklet actions in new tabs |
+| 1.2 | `02 Universal Bookmarklet Menu-1.2.user.txt` | Initial release | - Basic menu with Kagi "Summarize" bookmarklet<br>- Quick links for ChatGPT and Gemini |
 
