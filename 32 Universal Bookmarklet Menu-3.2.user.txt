@@ -323,7 +323,7 @@
             // Open multiple Kagi summarizer tabs for each URL in basket
             basket.forEach((item, index) => {
                 setTimeout(() => {
-                    window.open("https://kagi.com/summarizer/index.html?target_language=&summary=takeaway&url=" + encodeURIComponent(item.url), "_blank");
+                    window.open("https://kagi.com/summarizer/index.html?target_language=&summary=keypoints&url=" + encodeURIComponent(item.url), "_blank");
                 }, index * 500); // Stagger opening to avoid browser blocking
             });
             showStatusMessage(`Opening ${basket.length} summarizer tabs...`, 3000);
@@ -397,9 +397,9 @@
         code: function() {
             var selection = window.getSelection().toString().trim();
             if (selection) {
-                window.open("https://kagi.com/summarizer/?target_language=&summary=takeaway#" + encodeURIComponent(selection), "_blank");
+                window.open("https://kagi.com/summarizer/?target_language=&summary=keypoints#" + encodeURIComponent(selection), "_blank");
             } else {
-                window.open("https://kagi.com/summarizer/index.html?target_language=&summary=takeaway&url=" + encodeURIComponent(location.href), "_blank");
+                window.open("https://kagi.com/summarizer/index.html?target_language=&summary=keypoints&url=" + encodeURIComponent(location.href), "_blank");
             }
         }
     }, {
