@@ -35,6 +35,8 @@ This repository contains Tampermonkey userscripts that create a floating bookmar
 - **Version 2.9**: Updated to gemini-2.5-flash model, submenu UX with safe corridor
 - **Version 3.0**: Updated to gemini-3-flash-preview model (latest)
 - **Version 3.1**: Added "View Source" bookmarklet for quick HTML source access
+- **Version 3.2**: Enhanced View Source with date display, syntax highlighting, and line wrap toggles
+- **Version 3.3**: Updated Kagi Summarizer parameter from `takeaway` to `keypoints`
 
 ### Selection-Aware Bookmarklets
 
@@ -73,7 +75,7 @@ The "multi-page, etc." submenu uses a split-zone hover behavior:
 
 ## File Structure
 
-Scripts use a two-digit prefix naming convention for chronological ordering. Current latest: `31 Universal Bookmarklet Menu-3.1.user.txt`. Historical versions are moved to `previous-versions/` directory.
+Scripts use a two-digit prefix naming convention for chronological ordering. Current latest: `33 Universal Bookmarklet Menu-3.3.user.txt`. Historical versions are moved to `previous-versions/` directory.
 
 ## Development Notes
 
