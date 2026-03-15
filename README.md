@@ -5,7 +5,7 @@ _All AIs in your corner, wherever you are._
 ![](docs/screenshots/iphone.gif)
 
 
-## Functionalities (v3.3)
+## Functionalities (v4.0)
 
 - **Floating Menu:** A draggable trigger icon (📟) provides access to all features.
 - **AI Integration:**
@@ -45,10 +45,20 @@ Feel free to experiment with older versions to see how the menu evolved.
 
 ## Installing
 
+### One-Click Install (Recommended)
+
 1. Install the [Tampermonkey](https://www.tampermonkey.net/) extension in your browser.
-2. Open the script file you wish to use and copy its contents.
-3. Create a new script in Tampermonkey and paste the code, then save.
-4. Reload the page to see the menu trigger.
+2. **[Click here to install the script](https://raw.githubusercontent.com/renato-umeton/aitampermonkey/main/universal-bookmarklet-menu.user.js)** — Tampermonkey will open an install prompt automatically.
+3. Click **Install** in the Tampermonkey prompt.
+4. The script will **auto-update** when new versions are released.
+
+### Manual Install
+
+1. Install the [Tampermonkey](https://www.tampermonkey.net/) extension.
+2. Open [`universal-bookmarklet-menu.user.js`](universal-bookmarklet-menu.user.js) and copy its contents.
+3. In Tampermonkey, create a new script, paste the code, and save.
+
+> **Upgrading from v3.x?** If you previously installed a version named "33 Universal Bookmarklet Menu", delete that old script after installing v4.0. Your Gemini API key will need to be re-entered once — after that, it persists across all future auto-updates.
 
 ---
 
@@ -56,6 +66,7 @@ Feel free to experiment with older versions to see how the menu evolved.
 
 | Version | File | Key additions | Details |
 | ------- | ---- | ------------- | ------- |
+| 4.0 | `universal-bookmarklet-menu.user.js` | Auto-updates, version display, CI releases | - Tampermonkey auto-update support via `@updateURL`/`@downloadURL`<br>- Version number and date shown in menu (bottom-left)<br>- Stable canonical filename for persistent update URLs<br>- GitHub Actions CI creates releases on version bumps<br>- Added `@connect` whitelist for Gemini API |
 | 3.3 | `33 Universal Bookmarklet Menu-3.3.user.txt` | Kagi Summarizer update | - Updated Kagi Summarizer parameter from `summary=takeaway` to `summary=keypoints` for all SUMMARIZE actions (button, selection, and basket) |
 | 3.2 | `32 Universal Bookmarklet Menu-3.2.user.txt` | Enhanced View Source | - Added page date display (Last Modified or Fetched date)<br>- Added syntax highlighting toggle for HTML source<br>- Added line wrap toggle for better readability |
 | 3.1 | `31 Universal Bookmarklet Menu-3.1.user.txt` | View Source button | - Added "🖥️ View Source" button to quickly view the HTML source code of the current page |

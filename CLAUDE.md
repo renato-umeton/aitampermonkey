@@ -37,6 +37,7 @@ This repository contains Tampermonkey userscripts that create a floating bookmar
 - **Version 3.1**: Added "View Source" bookmarklet for quick HTML source access
 - **Version 3.2**: Enhanced View Source with date display, syntax highlighting, and line wrap toggles
 - **Version 3.3**: Updated Kagi Summarizer parameter from `takeaway` to `keypoints`
+- **Version 4.0**: Auto-update support, version display in menu, CI release workflow, stable canonical filename
 
 ### Selection-Aware Bookmarklets
 
@@ -75,7 +76,7 @@ The "multi-page, etc." submenu uses a split-zone hover behavior:
 
 ## File Structure
 
-Scripts use a two-digit prefix naming convention for chronological ordering. Current latest: `33 Universal Bookmarklet Menu-3.3.user.txt`. Historical versions are moved to `previous-versions/` directory.
+The current script is `universal-bookmarklet-menu.user.js` in the repository root. This filename is stable across versions — the version number lives in the `@version` metadata field and the `SCRIPT_VERSION`/`SCRIPT_DATE` constants, not the filename. Historical versions are in `previous-versions/` with the old numeric-prefix naming convention and `.user.txt` extension.
 
 ## Development Notes
 
@@ -92,4 +93,6 @@ Scripts use a two-digit prefix naming convention for chronological ordering. Cur
 
 **Theme Support**: Version 2.8+ includes automatic dark/light mode detection via `window.matchMedia('(prefers-color-scheme: dark)')`. Menu styles adapt to system preferences.
 
-**Version Management**: When creating new versions, move the previous version to `previous-versions/` directory and update README.md with the new version number and changelog.
+**Version Management**: When releasing a new version, update `SCRIPT_VERSION` and `SCRIPT_DATE` constants and the `@version` field in `universal-bookmarklet-menu.user.js`. The filename does not change. Copy the previous version's content to a new file in `previous-versions/` with the old naming convention before making changes. Update README.md changelog. A GitHub Actions workflow automatically creates a GitHub Release when a version bump is pushed to `main`.
+
+**Auto-Update System**: The script includes `@updateURL` and `@downloadURL` metadata pointing to the raw GitHub URL on `main`. Tampermonkey checks for version changes and auto-updates installed scripts. User data (`GM_setValue`) persists across updates as long as `@name` and `@namespace` remain unchanged.

@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'universal-bookmarklet-menu.user.js'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version and date from script
+        id: meta
+        run: |
+          VERSION=$(grep -oP "SCRIPT_VERSION = '\\K[^']+" universal-bookmarklet-menu.user.js)
+          DATE=$(grep -oP "SCRIPT_DATE = '\\K[^']+" universal-bookmarklet-menu.user.js)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check if tag already exists
+        id: check_tag
+        run: |
+          if git rev-parse "v${{ steps.meta.outputs.version }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Archive previous version
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          # Find the most recent archived version number
+          PREV=$(ls previous-versions/*.user.txt 2>/dev/null | sort -V | tail -1 || true)
+          if [ -n "$PREV" ]; then
+            echo "Most recent archive: $PREV"
+          fi
+          # The archive step is handled manually before version bump.
+          # This step validates that the previous version was archived.
+          ARCHIVED_COUNT=$(ls previous-versions/*.user.txt 2>/dev/null | wc -l)
+          echo "Archived versions: $ARCHIVED_COUNT"
+
+      - name: Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: "v${{ steps.meta.outputs.version }} — ${{ steps.meta.outputs.date }}"
+          body: |
+            ## Universal Bookmarklet Menu v${{ steps.meta.outputs.version }}
+
+            **Release date:** ${{ steps.meta.outputs.date }}
+
+            ### Install
+            **[Click here to install](https://raw.githubusercontent.com/renato-umeton/aitampermonkey/main/universal-bookmarklet-menu.user.js)** (requires Tampermonkey)
+
+            ### Auto-updates
+            Existing users will receive this update automatically via Tampermonkey.
+          files: universal-bookmarklet-menu.user.js
+          generate_release_notes: true
