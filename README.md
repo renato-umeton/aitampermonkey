@@ -5,7 +5,7 @@ _All AIs in your corner, wherever you are._
 ![](docs/screenshots/iphone.gif)
 
 
-## Functionalities (v3.2)
+## Functionalities (v3.3)
 
 - **Floating Menu:** A draggable trigger icon (📟) provides access to all features.
 - **AI Integration:**
@@ -56,6 +56,7 @@ Feel free to experiment with older versions to see how the menu evolved.
 
 | Version | File | Key additions | Details |
 | ------- | ---- | ------------- | ------- |
+| 3.3 | `33 Universal Bookmarklet Menu-3.3.user.txt` | Kagi Summarizer update | - Updated Kagi Summarizer parameter from `summary=takeaway` to `summary=keypoints` for all SUMMARIZE actions (button, selection, and basket) |
 | 3.2 | `32 Universal Bookmarklet Menu-3.2.user.txt` | Enhanced View Source | - Added page date display (Last Modified or Fetched date)<br>- Added syntax highlighting toggle for HTML source<br>- Added line wrap toggle for better readability |
 | 3.1 | `31 Universal Bookmarklet Menu-3.1.user.txt` | View Source button | - Added "🖥️ View Source" button to quickly view the HTML source code of the current page |
 | 3.0 | `30 Universal Bookmarklet Menu-3.0.user.txt` | Gemini API update | - Updated Gemini API to use gemini-3-flash-preview model |
