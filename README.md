@@ -63,6 +63,17 @@ Feel free to experiment with older versions to see how the menu evolved.
 
 ---
 
+## Contributing
+
+Before making any changes to this repository, **you must read and follow**:
+
+- **[`CLAUDE.md`](CLAUDE.md)** — Project architecture, code conventions, and AI-agent instructions
+- **[`CONTRIBUTING.md`](CONTRIBUTING.md)** — Development workflow, version management, and release process
+
+This applies to all contributors — human and AI agents alike.
+
+---
+
 ## Change log
 
 | Version | File | Key additions | Details |
