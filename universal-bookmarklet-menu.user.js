@@ -1544,23 +1544,21 @@ Current page title: ${document.title}`;
         menuVisible = false;
 
     });
-    submenuContainer.appendChild(hideAppMenuItem);
-
-    // --- Options Pane ---
+    // --- Options Pane (in submenu, above Hide Menu App) ---
     const optionsSeparator = document.createElement('div');
     optionsSeparator.className = 'custom-bm-separator';
-    menuContainer.appendChild(optionsSeparator);
+    submenuContainer.appendChild(optionsSeparator);
 
     const optionsToggle = document.createElement('div');
     optionsToggle.className = 'custom-bm-menu-item custom-bm-options-toggle';
     optionsToggle.innerHTML = '⚙️ Options';
     optionsToggle.style.cursor = 'pointer';
-    menuContainer.appendChild(optionsToggle);
+    submenuContainer.appendChild(optionsToggle);
 
     const optionsPane = document.createElement('div');
     optionsPane.className = 'custom-bm-options-pane';
     optionsPane.style.display = 'none';
-    menuContainer.appendChild(optionsPane);
+    submenuContainer.appendChild(optionsPane);
 
     // Position setting
     const posLabel = document.createElement('div');
@@ -1651,6 +1649,8 @@ Current page title: ${document.title}`;
         optionsVisible = !optionsVisible;
         optionsPane.style.display = optionsVisible ? 'block' : 'none';
     });
+
+    submenuContainer.appendChild(hideAppMenuItem);
 
     // --- Version Label (bottom-left of menu) ---
     const versionLabel = document.createElement('div');
