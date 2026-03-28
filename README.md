@@ -5,7 +5,7 @@ _All AIs in your corner, wherever you are._
 ![](docs/screenshots/iphone.gif)
 
 
-## Functionalities (v4.0)
+## Functionalities (v4.1)
 
 - **Floating Menu:** A draggable trigger icon (📟) provides access to all features.
 - **AI Integration:**
@@ -23,7 +23,8 @@ _All AIs in your corner, wherever you are._
 - **UI/UX Features:**
     - `(selectAll)` buttons for easily using full page content as context.
     - Status messages and custom notifications for actions.
-    - Automatic dark/light theme based on your browser or OS settings.
+    - Automatic dark/light theme based on your browser or OS settings (configurable).
+    - Options pane to set trigger position (right, left, or custom) and toggle dark theme following.
     - Option to permanently hide the trigger icon.
  - **URL Basket:**
     - Collect multiple pages into a "basket".
@@ -66,7 +67,8 @@ Feel free to experiment with older versions to see how the menu evolved.
 
 | Version | File | Key additions | Details |
 | ------- | ---- | ------------- | ------- |
-| 4.0 | `universal-bookmarklet-menu.user.js` | Auto-updates, version display, CI releases | - Tampermonkey auto-update support via `@updateURL`/`@downloadURL`<br>- Version number and date shown in menu (bottom-left)<br>- Stable canonical filename for persistent update URLs<br>- GitHub Actions CI creates releases on version bumps<br>- Added `@connect` whitelist for Gemini API |
+| 4.1 | `universal-bookmarklet-menu.user.js` | Options pane | - Added Options pane (⚙️) with trigger position setting (right/left/custom) and dark theme following toggle<br>- Position and theme preferences persist across sessions via `GM_setValue`<br>- Custom position saved automatically when dragging the trigger |
+| 4.0 | `34 Universal Bookmarklet Menu-4.0.user.txt` | Auto-updates, version display, CI releases | - Tampermonkey auto-update support via `@updateURL`/`@downloadURL`<br>- Version number and date shown in menu (bottom-left)<br>- Stable canonical filename for persistent update URLs<br>- GitHub Actions CI creates releases on version bumps<br>- Added `@connect` whitelist for Gemini API |
 | 3.3 | `33 Universal Bookmarklet Menu-3.3.user.txt` | Kagi Summarizer update | - Updated Kagi Summarizer parameter from `summary=takeaway` to `summary=keypoints` for all SUMMARIZE actions (button, selection, and basket) |
 | 3.2 | `32 Universal Bookmarklet Menu-3.2.user.txt` | Enhanced View Source | - Added page date display (Last Modified or Fetched date)<br>- Added syntax highlighting toggle for HTML source<br>- Added line wrap toggle for better readability |
 | 3.1 | `31 Universal Bookmarklet Menu-3.1.user.txt` | View Source button | - Added "🖥️ View Source" button to quickly view the HTML source code of the current page |
