@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Universal Bookmarklet Menu
 // @namespace    http://tampermonkey.net/
-// @version      4.1
+// @version      4.0
 // @description  Floating AI bookmarklet menu with auto-updates. Quick access to ChatGPT, Claude, Gemini, Kagi, and page utilities.
 // @author       Renato (with additions by AI)
 // @match        *://*/*
@@ -19,8 +19,8 @@
     'use strict';
 
     // --- Version Info ---
-    const SCRIPT_VERSION = '4.1';
-    const SCRIPT_DATE = '2026-03-28';
+    const SCRIPT_VERSION = '4.0';
+    const SCRIPT_DATE = '2026-03-15';
 
     // --- Helper for Status Messages (Generic Green/Red, Centered) ---
     function showStatusMessage(text, duration = 3000, isError = false) {
@@ -178,33 +178,6 @@
         }
         return apiKey;
     }
-
-    // --- Settings Management ---
-    function getSettings() {
-        try {
-            const defaults = {
-                position: 'right',       // 'right', 'left', or 'custom'
-                customX: null,           // custom X position (px from left)
-                customY: null,           // custom Y position (px from top)
-                darkThemeFollowing: true  // true = follow system, false = always light
-            };
-            const stored = GM_getValue('menu_settings', '{}');
-            return Object.assign(defaults, JSON.parse(stored));
-        } catch (e) {
-            console.error('Error reading settings:', e);
-            return { position: 'right', customX: null, customY: null, darkThemeFollowing: true };
-        }
-    }
-
-    function saveSettings(settings) {
-        try {
-            GM_setValue('menu_settings', JSON.stringify(settings));
-        } catch (e) {
-            console.error('Error saving settings:', e);
-        }
-    }
-
-    const currentSettings = getSettings();
 
     // --- Helper for Gemini API Call ---
     async function callGeminiAPI(prompt, apiKey) {
@@ -1060,48 +1033,6 @@ Current page title: ${document.title}`;
     menuTrigger.textContent = '📟';
     document.body.appendChild(menuTrigger);
 
-    // --- Apply Settings ---
-    function applyPositionSetting() {
-        const pos = currentSettings.position;
-        if (pos === 'left') {
-            menuTrigger.style.right = 'auto';
-            menuTrigger.style.bottom = '80px';
-            menuTrigger.style.left = '20px';
-            menuTrigger.style.top = 'auto';
-        } else if (pos === 'custom' && currentSettings.customX !== null && currentSettings.customY !== null) {
-            menuTrigger.style.right = 'auto';
-            menuTrigger.style.bottom = 'auto';
-            menuTrigger.style.left = currentSettings.customX + 'px';
-            menuTrigger.style.top = currentSettings.customY + 'px';
-        } else {
-            // default: right
-            menuTrigger.style.left = 'auto';
-            menuTrigger.style.top = 'auto';
-            menuTrigger.style.right = '20px';
-            menuTrigger.style.bottom = '80px';
-        }
-    }
-
-    function applyThemeSetting() {
-        if (currentSettings.darkThemeFollowing) {
-            document.documentElement.classList.remove('custom-bm-force-light');
-        } else {
-            document.documentElement.classList.add('custom-bm-force-light');
-        }
-    }
-
-    function saveCustomPosition() {
-        if (currentSettings.position === 'custom') {
-            const rect = menuTrigger.getBoundingClientRect();
-            currentSettings.customX = rect.left;
-            currentSettings.customY = rect.top;
-            saveSettings(currentSettings);
-        }
-    }
-
-    applyPositionSetting();
-    applyThemeSetting();
-
     // --- Draggable Menu Trigger Logic ---
 
     // ====== DESKTOP DRAG LOGIC (Existing - Unchanged) ======
@@ -1181,7 +1112,6 @@ Current page title: ${document.title}`;
 
         if (dragState.isActuallyDragging) {
             menuTrigger.style.cursor = 'pointer'; // Reset cursor
-            saveCustomPosition(); // Persist position if custom mode
         }
         // The isActuallyDragging flag will be checked by the click handler
         // to differentiate between a click and a drag.
@@ -1344,7 +1274,6 @@ Current page title: ${document.title}`;
             e.preventDefault(); // IMPORTANT: Prevents click event from firing after a drag
             document.body.style.userSelect = '';
             document.body.style.webkitUserSelect = '';
-            saveCustomPosition(); // Persist position if custom mode
         }
 
         // Reset states for the next touch interaction
@@ -1546,112 +1475,6 @@ Current page title: ${document.title}`;
     });
     submenuContainer.appendChild(hideAppMenuItem);
 
-    // --- Options Pane ---
-    const optionsSeparator = document.createElement('div');
-    optionsSeparator.className = 'custom-bm-separator';
-    menuContainer.appendChild(optionsSeparator);
-
-    const optionsToggle = document.createElement('div');
-    optionsToggle.className = 'custom-bm-menu-item custom-bm-options-toggle';
-    optionsToggle.innerHTML = '⚙️ Options';
-    optionsToggle.style.cursor = 'pointer';
-    menuContainer.appendChild(optionsToggle);
-
-    const optionsPane = document.createElement('div');
-    optionsPane.className = 'custom-bm-options-pane';
-    optionsPane.style.display = 'none';
-    menuContainer.appendChild(optionsPane);
-
-    // Position setting
-    const posLabel = document.createElement('div');
-    posLabel.className = 'custom-bm-option-label';
-    posLabel.textContent = 'Position';
-    optionsPane.appendChild(posLabel);
-
-    const posGroup = document.createElement('div');
-    posGroup.className = 'custom-bm-option-group';
-    optionsPane.appendChild(posGroup);
-
-    ['right', 'left', 'custom'].forEach(pos => {
-        const btn = document.createElement('button');
-        btn.className = 'custom-bm-option-btn' + (currentSettings.position === pos ? ' active' : '');
-        btn.textContent = pos.charAt(0).toUpperCase() + pos.slice(1);
-        btn.dataset.pos = pos;
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            currentSettings.position = pos;
-            if (pos === 'custom') {
-                // Save current dragged position as custom
-                const rect = menuTrigger.getBoundingClientRect();
-                currentSettings.customX = rect.left;
-                currentSettings.customY = rect.top;
-            }
-            saveSettings(currentSettings);
-            applyPositionSetting();
-            // Update active button
-            posGroup.querySelectorAll('.custom-bm-option-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            if (pos === 'custom') {
-                customHint.style.display = 'block';
-            } else {
-                customHint.style.display = 'none';
-            }
-        });
-        posGroup.appendChild(btn);
-    });
-
-    const customHint = document.createElement('div');
-    customHint.className = 'custom-bm-option-hint';
-    customHint.textContent = 'Drag 📟 to desired position; it will be saved.';
-    customHint.style.display = currentSettings.position === 'custom' ? 'block' : 'none';
-    optionsPane.appendChild(customHint);
-
-    // Dark theme following setting
-    const themeLabel = document.createElement('div');
-    themeLabel.className = 'custom-bm-option-label';
-    themeLabel.textContent = 'Dark theme';
-    themeLabel.style.marginTop = '10px';
-    optionsPane.appendChild(themeLabel);
-
-    const themeGroup = document.createElement('div');
-    themeGroup.className = 'custom-bm-option-group';
-    optionsPane.appendChild(themeGroup);
-
-    const themeToggleLabel = document.createElement('label');
-    themeToggleLabel.className = 'custom-bm-theme-toggle';
-
-    const themeCheckbox = document.createElement('input');
-    themeCheckbox.type = 'checkbox';
-    themeCheckbox.checked = currentSettings.darkThemeFollowing;
-    themeCheckbox.addEventListener('change', (e) => {
-        e.stopPropagation();
-        currentSettings.darkThemeFollowing = themeCheckbox.checked;
-        saveSettings(currentSettings);
-        applyThemeSetting();
-    });
-
-    const themeSlider = document.createElement('span');
-    themeSlider.className = 'custom-bm-theme-slider';
-
-    const themeText = document.createElement('span');
-    themeText.className = 'custom-bm-theme-text';
-    themeText.textContent = 'Follow system dark mode';
-
-    themeToggleLabel.appendChild(themeCheckbox);
-    themeToggleLabel.appendChild(themeSlider);
-    themeToggleLabel.appendChild(themeText);
-    themeGroup.appendChild(themeToggleLabel);
-
-    // Toggle options pane visibility
-    let optionsVisible = false;
-    optionsToggle.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        optionsVisible = !optionsVisible;
-        optionsPane.style.display = optionsVisible ? 'block' : 'none';
-    });
-
     // --- Version Label (bottom-left of menu) ---
     const versionLabel = document.createElement('div');
     versionLabel.className = 'custom-bm-version-label';
@@ -1831,101 +1654,9 @@ Current page title: ${document.title}`;
             margin-top: 4px;
         }
 
-        /* Options Pane */
-        .custom-bm-options-toggle {
-            font-size: 14px;
-        }
-        .custom-bm-options-pane {
-            padding: 8px 20px 12px;
-        }
-        .custom-bm-option-label {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--item-text);
-            margin-bottom: 6px;
-            opacity: 0.7;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .custom-bm-option-group {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .custom-bm-option-btn {
-            padding: 5px 12px;
-            border: 1px solid var(--menu-border);
-            border-radius: 6px;
-            background: var(--menu-bg);
-            color: var(--item-text);
-            font-size: 13px;
-            cursor: pointer;
-            transition: background-color 0.15s, border-color 0.15s;
-        }
-        .custom-bm-option-btn:hover {
-            background-color: var(--item-hover-bg);
-        }
-        .custom-bm-option-btn.active {
-            background-color: #4285F4;
-            color: #fff;
-            border-color: #4285F4;
-        }
-        .custom-bm-option-hint {
-            font-size: 11px;
-            color: var(--item-text);
-            opacity: 0.6;
-            margin-top: 4px;
-            font-style: italic;
-        }
-        .custom-bm-theme-toggle {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            user-select: none;
-        }
-        .custom-bm-theme-toggle input {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .custom-bm-theme-slider {
-            position: relative;
-            display: inline-block;
-            width: 36px;
-            height: 20px;
-            background-color: #ccc;
-            border-radius: 20px;
-            transition: background-color 0.3s;
-            flex-shrink: 0;
-        }
-        .custom-bm-theme-slider::before {
-            content: "";
-            position: absolute;
-            height: 14px;
-            width: 14px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            border-radius: 50%;
-            transition: transform 0.3s;
-        }
-        .custom-bm-theme-toggle input:checked + .custom-bm-theme-slider {
-            background-color: #4285F4;
-        }
-        .custom-bm-theme-toggle input:checked + .custom-bm-theme-slider::before {
-            transform: translateX(16px);
-        }
-        .custom-bm-theme-text {
-            font-size: 13px;
-            color: var(--item-text);
-        }
-
         /* Dark Theme */
         @media (prefers-color-scheme: dark) {
-            :root:not(.custom-bm-force-light) {
+            :root {
                 --menu-bg: #2b2b2b;
                 --menu-border: #444;
                 --menu-shadow: rgba(0,0,0,0.4);
