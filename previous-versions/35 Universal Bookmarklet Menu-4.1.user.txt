@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Universal Bookmarklet Menu
 // @namespace    http://tampermonkey.net/
-// @version      4.2
+// @version      4.1
 // @description  Floating AI bookmarklet menu with auto-updates. Quick access to ChatGPT, Claude, Gemini, Kagi, and page utilities.
 // @author       Renato (with additions by AI)
 // @match        *://*/*
@@ -19,8 +19,8 @@
     'use strict';
 
     // --- Version Info ---
-    const SCRIPT_VERSION = '4.2';
-    const SCRIPT_DATE = '2026-04-22';
+    const SCRIPT_VERSION = '4.1';
+    const SCRIPT_DATE = '2026-03-28';
 
     // --- Helper for Status Messages (Generic Green/Red, Centered) ---
     function showStatusMessage(text, duration = 3000, isError = false) {
@@ -431,8 +431,7 @@
         code: function() {
             var selection = window.getSelection().toString().trim();
             if (selection) {
-                // Use index.html so Kagi's desktop UI consistently honors summary=keypoints (issue #21)
-                window.open("https://kagi.com/summarizer/index.html?target_language=&summary=keypoints#" + encodeURIComponent(selection), "_blank");
+                window.open("https://kagi.com/summarizer/?target_language=&summary=keypoints#" + encodeURIComponent(selection), "_blank");
             } else {
                 window.open("https://kagi.com/summarizer/index.html?target_language=&summary=keypoints&url=" + encodeURIComponent(location.href), "_blank");
             }
@@ -1061,19 +1060,12 @@ Current page title: ${document.title}`;
     menuTrigger.textContent = '📟';
     document.body.appendChild(menuTrigger);
 
-    // Mobile layout sits the trigger 100px higher to clear mobile browser
-    // chrome (URL bar, home indicator) — issue #23.
-    function getTriggerBottomOffsetPx() {
-        return window.matchMedia('(max-width: 768px)').matches ? 180 : 80;
-    }
-
     // --- Apply Settings ---
     function applyPositionSetting() {
         const pos = currentSettings.position;
-        const bottomPx = getTriggerBottomOffsetPx() + 'px';
         if (pos === 'left') {
             menuTrigger.style.right = 'auto';
-            menuTrigger.style.bottom = bottomPx;
+            menuTrigger.style.bottom = '80px';
             menuTrigger.style.left = '20px';
             menuTrigger.style.top = 'auto';
         } else if (pos === 'custom' && currentSettings.customX !== null && currentSettings.customY !== null) {
@@ -1086,7 +1078,7 @@ Current page title: ${document.title}`;
             menuTrigger.style.left = 'auto';
             menuTrigger.style.top = 'auto';
             menuTrigger.style.right = '20px';
-            menuTrigger.style.bottom = bottomPx;
+            menuTrigger.style.bottom = '80px';
         }
     }
 
@@ -1382,43 +1374,33 @@ Current page title: ${document.title}`;
         menuVisible = false;
     }
 
-    // Hardcoded unique IDs owned by this script. Used to exclude our own UI
-    // from the selectAll helper (issue #22).
-    const CUSTOM_BM_ELEMENT_IDS = [
-        'custom-bm-menu-trigger',
-        'custom-bm-menu-container',
-        'custom-bm-status-msg',
-        'custom-gemini-notification-box'
-    ];
-
-    // Helper function to select all text on the page. Returns a restore
-    // function (or null on failure). The restore function must be called
-    // AFTER the bookmarklet has read window.getSelection().toString() — if
-    // our menu elements are made visible again before that read, their
-    // text leaks into the selection (issue #22).
+    // Helper function to select all text on the page
     function selectAllPageText() {
         try {
             const selection = window.getSelection();
-            if (!selection) return null;
+            if (!selection) return false;
 
-            const elementsToHide = CUSTOM_BM_ELEMENT_IDS
-                .map(id => document.getElementById(id))
-                .filter(el => el);
+            // Temporarily hide our own elements to exclude them from selection
+            const menuTrigger = document.getElementById('custom-bm-menu-trigger');
+            const menuContainer = document.getElementById('custom-bm-menu-container');
+            const statusMsg = document.getElementById('custom-bm-status-msg');
+            const geminiNotification = document.getElementById('custom-gemini-notification-box');
+            const elementsToHide = [menuTrigger, menuContainer, statusMsg, geminiNotification].filter(el => el);
             const originalStyles = elementsToHide.map(el => el.style.display);
+            // Hide elements
             elementsToHide.forEach(el => el.style.display = 'none');
-
             const range = document.createRange();
             range.selectNodeContents(document.body);
-            selection.removeAllRanges();
-            selection.addRange(range);
+            selection.removeAllRanges(); // Clear any previous selection
+            selection.addRange(range); // Add the new range
 
-            return () => {
-                elementsToHide.forEach((el, i) => el.style.display = originalStyles[i]);
-            };
+            // Restore elements
+            elementsToHide.forEach((el, i) => el.style.display = originalStyles[i]);
+            return true;
         } catch (e) {
             console.error("Error selecting all text:", e);
             showStatusMessage("Could not select page text.", 3000, true);
-            return null;
+            return false;
         }
     }
 
@@ -1453,14 +1435,9 @@ Current page title: ${document.title}`;
                 event.preventDefault();
                 event.stopPropagation();
 
-                const restore = selectAllPageText();
-                if (restore) {
+                if (selectAllPageText()) {
                     setTimeout(() => {
-                        try {
-                            runBookmarkletAndHideMenu(bm);
-                        } finally {
-                            restore();
-                        }
+                        runBookmarkletAndHideMenu(bm);
                     }, 50);
                 }
             });
@@ -1768,12 +1745,6 @@ Current page title: ${document.title}`;
             -webkit-user-select: none; /* Safari */
             backdrop-filter: blur(4px); /* Enhanced frosted glass */
             transition: background-color 0.2s; /* Smooth hover effect - note: JS might override this temporarily */
-        }
-        /* Raise the trigger 100px on mobile to clear browser chrome (issue #23). */
-        @media (max-width: 768px) {
-            #custom-bm-menu-trigger {
-                bottom: 180px;
-            }
         }
         #custom-bm-menu-trigger:hover {
             background-color: var(--trigger-hover-bg);

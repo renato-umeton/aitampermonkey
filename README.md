@@ -5,7 +5,7 @@ _All AIs in your corner, wherever you are._
 ![](docs/screenshots/iphone.gif)
 
 
-## Functionalities (v4.1)
+## Functionalities (v4.2)
 
 - **Floating Menu:** A draggable trigger icon (📟) provides access to all features.
 - **AI Integration:**
@@ -78,7 +78,8 @@ This applies to all contributors — human and AI agents alike.
 
 | Version | File | Key additions | Details |
 | ------- | ---- | ------------- | ------- |
-| 4.1 | `universal-bookmarklet-menu.user.js` | Options pane | - Added Options pane (⚙️) with trigger position setting (right/left/custom) and dark theme following toggle<br>- Position and theme preferences persist across sessions via `GM_setValue`<br>- Custom position saved automatically when dragging the trigger |
+| 4.2 | `universal-bookmarklet-menu.user.js` | Fixes for #21, #22, #23 | - Kagi Summarizer now uses `index.html` in the selection URL so desktop honors `summary=keypoints` (#21)<br>- `(selectAll)` keeps menu UI hidden until the bookmarklet reads the selection, so menu text no longer leaks into it (#22)<br>- Mobile trigger sits 100px higher (`bottom: 180px`) to clear mobile browser chrome (#23) |
+| 4.1 | `35 Universal Bookmarklet Menu-4.1.user.txt` | Options pane | - Added Options pane (⚙️) with trigger position setting (right/left/custom) and dark theme following toggle<br>- Position and theme preferences persist across sessions via `GM_setValue`<br>- Custom position saved automatically when dragging the trigger |
 | 4.0 | `34 Universal Bookmarklet Menu-4.0.user.txt` | Auto-updates, version display, CI releases | - Tampermonkey auto-update support via `@updateURL`/`@downloadURL`<br>- Version number and date shown in menu (bottom-left)<br>- Stable canonical filename for persistent update URLs<br>- GitHub Actions CI creates releases on version bumps<br>- Added `@connect` whitelist for Gemini API |
 | 3.3 | `33 Universal Bookmarklet Menu-3.3.user.txt` | Kagi Summarizer update | - Updated Kagi Summarizer parameter from `summary=takeaway` to `summary=keypoints` for all SUMMARIZE actions (button, selection, and basket) |
 | 3.2 | `32 Universal Bookmarklet Menu-3.2.user.txt` | Enhanced View Source | - Added page date display (Last Modified or Fetched date)<br>- Added syntax highlighting toggle for HTML source<br>- Added line wrap toggle for better readability |
