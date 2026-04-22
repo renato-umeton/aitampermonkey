@@ -357,7 +357,7 @@
             // Open multiple Kagi summarizer tabs for each URL in basket
             basket.forEach((item, index) => {
                 setTimeout(() => {
-                    window.open("https://kagi.com/summarizer/index.html?target_language=&summary=keypoints&url=" + encodeURIComponent(item.url), "_blank");
+                    window.open("https://kagi.com/summarizer/index.html?summary=keypoints&target_language=&url=" + encodeURIComponent(item.url), "_blank");
                 }, index * 500); // Stagger opening to avoid browser blocking
             });
             showStatusMessage(`Opening ${basket.length} summarizer tabs...`, 3000);
@@ -431,10 +431,10 @@
         code: function() {
             var selection = window.getSelection().toString().trim();
             if (selection) {
-                // Use index.html so Kagi's desktop UI consistently honors summary=keypoints (issue #21)
-                window.open("https://kagi.com/summarizer/index.html?target_language=&summary=keypoints#" + encodeURIComponent(selection), "_blank");
+                // summary=keypoints must be the first query arg so Kagi's desktop UI honors it (issue #21)
+                window.open("https://kagi.com/summarizer/index.html?summary=keypoints&target_language=#" + encodeURIComponent(selection), "_blank");
             } else {
-                window.open("https://kagi.com/summarizer/index.html?target_language=&summary=keypoints&url=" + encodeURIComponent(location.href), "_blank");
+                window.open("https://kagi.com/summarizer/index.html?summary=keypoints&target_language=&url=" + encodeURIComponent(location.href), "_blank");
             }
         }
     }, {
