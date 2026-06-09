@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Universal Bookmarklet Menu
 // @namespace    http://tampermonkey.net/
-// @version      4.4
+// @version      4.3
 // @description  Floating AI bookmarklet menu with auto-updates. Quick access to ChatGPT, Claude, Gemini, NotebookLM, Kagi, and page utilities.
 // @author       Renato (with additions by AI)
 // @match        *://*/*
@@ -19,7 +19,7 @@
     'use strict';
 
     // --- Version Info ---
-    const SCRIPT_VERSION = '4.4';
+    const SCRIPT_VERSION = '4.3';
     const SCRIPT_DATE = '2026-06-09';
 
     // --- Helper for Status Messages (Generic Green/Red, Centered) ---
@@ -434,12 +434,12 @@
                 return;
             }
 
-            // No extra prompt — copy the raw basket URLs so the user can paste them
-            // (CTRL+V) straight into NotebookLM as sources.
+            // NotebookLM has no URL-prefill API, so copy the basket URLs to the
+            // clipboard for the user to paste in as sources, then open NotebookLM.
             const urlList = basket.map((item) => item.url).join("\n");
 
             const openNotebookLM = function() {
-                showCustomGeminiNotification("Material copied — paste it with CTRL+V. Opening NotebookLM now…");
+                showStatusMessage("Basket URLs copied — paste them as NotebookLM sources.", 3000);
                 window.open("https://notebooklm.google.com/", "_blank");
             };
 
@@ -977,15 +977,17 @@
             });
         }
     }, {
-        name: "📓 NotebookLM", // Copies context to the clipboard, then opens NotebookLM for pasting
+        name: "📓 NotebookLM", // Copies context for use as a NotebookLM source, then opens NotebookLM
         code: function() {
             var selection = window.getSelection().toString().trim();
-            // No extra prompt — copy the raw material (selected text or page URL) so the
-            // user can paste it (CTRL+V) straight into NotebookLM as a source.
+            // NotebookLM has no URL-prefill API, so copy the context (selected text
+            // or the page URL) to the clipboard for pasting as a source, then open it.
             var textToCopy = selection ? selection : location.href;
 
             const openNotebookLM = function() {
-                showCustomGeminiNotification("Material copied — paste it with CTRL+V. Opening NotebookLM now…");
+                showStatusMessage(selection ?
+                    "Selected text copied — paste it as a NotebookLM source." :
+                    "Page URL copied — paste it as a NotebookLM source.", 3000);
                 window.open("https://notebooklm.google.com/", "_blank");
             };
 
