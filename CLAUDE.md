@@ -38,6 +38,7 @@ This repository contains Tampermonkey userscripts that create a floating bookmar
 - **Version 3.2**: Enhanced View Source with date display, syntax highlighting, and line wrap toggles
 - **Version 3.3**: Updated Kagi Summarizer parameter from `takeaway` to `keypoints`
 - **Version 4.0**: Auto-update support, version display in menu, CI release workflow, stable canonical filename
+- **Version 4.3**: NotebookLM integration (single-page and basket) — copies context to the clipboard and opens NotebookLM for pasting as a source
 
 ### Selection-Aware Bookmarklets
 
@@ -47,6 +48,7 @@ Scripts in `selectionEnabledBookmarklets` set can work with selected text or ful
 - 💬 Talk to ChatGPT
 - 🍊 ask Claude
 - 🔷 Copy Gemini Prompt
+- 📓 NotebookLM
 
 These automatically get "(selectAll)" helper buttons that select all page text before execution.
 

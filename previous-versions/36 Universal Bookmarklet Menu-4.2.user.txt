@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Universal Bookmarklet Menu
 // @namespace    http://tampermonkey.net/
-// @version      4.3
-// @description  Floating AI bookmarklet menu with auto-updates. Quick access to ChatGPT, Claude, Gemini, NotebookLM, Kagi, and page utilities.
+// @version      4.2
+// @description  Floating AI bookmarklet menu with auto-updates. Quick access to ChatGPT, Claude, Gemini, Kagi, and page utilities.
 // @author       Renato (with additions by AI)
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -19,8 +19,8 @@
     'use strict';
 
     // --- Version Info ---
-    const SCRIPT_VERSION = '4.3';
-    const SCRIPT_DATE = '2026-06-09';
+    const SCRIPT_VERSION = '4.2';
+    const SCRIPT_DATE = '2026-04-22';
 
     // --- Helper for Status Messages (Generic Green/Red, Centered) ---
     function showStatusMessage(text, duration = 3000, isError = false) {
@@ -423,29 +423,6 @@
             }).catch(function(err) {
                 console.error('Failed to copy basket prompt for Gemini:', err);
                 showStatusMessage("Error copying Gemini basket prompt.", 3000, true);
-            });
-        }
-    }, {
-        name: "📓 NotebookLM Basket",
-        code: function() {
-            const basket = getBasket();
-            if (basket.length === 0) {
-                showStatusMessage("Basket is empty! Add some URLs first.", 3000, true);
-                return;
-            }
-
-            // NotebookLM has no URL-prefill API, so copy the basket URLs to the
-            // clipboard for the user to paste in as sources, then open NotebookLM.
-            const urlList = basket.map((item) => item.url).join("\n");
-
-            const openNotebookLM = function() {
-                showStatusMessage("Basket URLs copied — paste them as NotebookLM sources.", 3000);
-                window.open("https://notebooklm.google.com/", "_blank");
-            };
-
-            navigator.clipboard.writeText(urlList).then(openNotebookLM).catch(function(err) {
-                console.error('Failed to copy basket URLs for NotebookLM:', err);
-                openNotebookLM();
             });
         }
     }];
@@ -977,26 +954,6 @@
             });
         }
     }, {
-        name: "📓 NotebookLM", // Copies context for use as a NotebookLM source, then opens NotebookLM
-        code: function() {
-            var selection = window.getSelection().toString().trim();
-            // NotebookLM has no URL-prefill API, so copy the context (selected text
-            // or the page URL) to the clipboard for pasting as a source, then open it.
-            var textToCopy = selection ? selection : location.href;
-
-            const openNotebookLM = function() {
-                showStatusMessage(selection ?
-                    "Selected text copied — paste it as a NotebookLM source." :
-                    "Page URL copied — paste it as a NotebookLM source.", 3000);
-                window.open("https://notebooklm.google.com/", "_blank");
-            };
-
-            navigator.clipboard.writeText(textToCopy).then(openNotebookLM).catch(function(err) {
-                console.error('Tampermonkey Script: Failed to copy text for NotebookLM: ', err);
-                openNotebookLM();
-            });
-        }
-    }, {
         name: "🤖 Generate & Run Code", // New Gemini Code Generator
         code: async function() {
             try {
@@ -1469,8 +1426,7 @@ Current page title: ${document.title}`;
         "✨ SUMMARIZE",
         "💬 Talk to ChatGPT",
         "🍊 ask Claude",
-        "🔷 Copy Gemini Prompt",
-        "📓 NotebookLM"
+        "🔷 Copy Gemini Prompt"
     ]);
 
     // --- Populate Regular Bookmarklets ---
