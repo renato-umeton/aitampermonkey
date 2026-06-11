@@ -504,7 +504,7 @@
     }, {
         name: "♓ Get it at Harvard!",
         code: function() {
-            location.href = "https://go.openathens.net/redirector/library.harvard.edu?url=https%3A%2F%2Fezp.prod1.hul.harvard.edu%2Flogin%3Furl%3D" + location.href;
+            location.href = "https://go.openathens.net/redirector/library.harvard.edu?url=https%3A%2F%2Fezp.prod1.hul.harvard.edu%2Flogin%3Furl%3D" + encodeURIComponent(location.href);
         }
     }, {
         name: "🖥️ View Source",
