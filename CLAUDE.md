@@ -39,6 +39,8 @@ This repository contains Tampermonkey userscripts that create a floating bookmar
 - **Version 3.3**: Updated Kagi Summarizer parameter from `takeaway` to `keypoints`
 - **Version 4.0**: Auto-update support, version display in menu, CI release workflow, stable canonical filename
 - **Version 4.3**: NotebookLM integration (single-page and basket) — copies context to the clipboard and opens NotebookLM for pasting as a source
+- **Version 4.4**: NotebookLM uses the Gemini-style custom notification scaffolding (CTRL+C/CTRL+V, no extra prompt)
+- **Version 4.5**: NotebookLM shows the Gemini-style disappearing pop-up for ~1s before opening NotebookLM
 
 ### Selection-Aware Bookmarklets
 

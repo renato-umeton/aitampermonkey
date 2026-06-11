@@ -5,7 +5,7 @@ _All AIs in your corner, wherever you are._
 ![](docs/screenshots/iphone.gif)
 
 
-## Functionalities (v4.4)
+## Functionalities (v4.5)
 
 - **Floating Menu:** A draggable trigger icon (📟) provides access to all features.
 - **AI Integration:**
@@ -79,6 +79,7 @@ This applies to all contributors — human and AI agents alike.
 
 | Version | File | Key additions | Details |
 | ------- | ---- | ------------- | ------- |
+| 4.5 | `universal-bookmarklet-menu.user.js` | NotebookLM disappearing pop-up (#25) | - "📓 NotebookLM" and "📓 NotebookLM Basket" now show the Gemini-style disappearing pop-up for ~1s before opening NotebookLM, so the user sees the "paste with CTRL+V" message first |
 | 4.4 | `universal-bookmarklet-menu.user.js` | NotebookLM CTRL+C/CTRL+V flow (#25) | - "📓 NotebookLM" and "📓 NotebookLM Basket" now use the same custom notification scaffolding as the Gemini bookmarklet<br>- Copies the material to the clipboard (CTRL+C) with no extra prompt, tells the user to paste it (CTRL+V), and opens NotebookLM |
 | 4.3 | `universal-bookmarklet-menu.user.js` | NotebookLM integration (#25) | - Added "📓 NotebookLM" bookmarklet that copies the selected text or page URL to the clipboard and opens NotebookLM to paste in as a source (selection-aware with `(selectAll)`)<br>- Added "📓 NotebookLM Basket" submenu action that copies all basket URLs to the clipboard and opens NotebookLM |
 | 4.2 | `universal-bookmarklet-menu.user.js` | Fixes for #21, #22, #23 | - Kagi Summarizer now uses `index.html` in the selection URL so desktop honors `summary=keypoints` (#21)<br>- `(selectAll)` keeps menu UI hidden until the bookmarklet reads the selection, so menu text no longer leaks into it (#22)<br>- Mobile trigger sits 100px higher (`bottom: 180px`) to clear mobile browser chrome (#23) |
