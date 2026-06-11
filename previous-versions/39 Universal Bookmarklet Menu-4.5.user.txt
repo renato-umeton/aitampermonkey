@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Universal Bookmarklet Menu
 // @namespace    http://tampermonkey.net/
-// @version      4.6
+// @version      4.5
 // @description  Floating AI bookmarklet menu with auto-updates. Quick access to ChatGPT, Claude, Gemini, NotebookLM, Kagi, and page utilities.
 // @author       Renato (with additions by AI)
 // @match        *://*/*
@@ -19,7 +19,7 @@
     'use strict';
 
     // --- Version Info ---
-    const SCRIPT_VERSION = '4.6';
+    const SCRIPT_VERSION = '4.5';
     const SCRIPT_DATE = '2026-06-11';
 
     // --- Helper for Status Messages (Generic Green/Red, Centered) ---
@@ -439,11 +439,8 @@
             const urlList = basket.map((item) => item.url).join("\n");
 
             const openNotebookLM = function() {
-                // Show the disappearing pop-up first, then head to NotebookLM after ~1s.
-                showCustomGeminiNotification("Material copied — paste it with CTRL+V. Heading to NotebookLM now…");
-                setTimeout(function() {
-                    window.open("https://notebooklm.google.com/", "_blank");
-                }, 1000);
+                showCustomGeminiNotification("Material copied — paste it with CTRL+V. Opening NotebookLM now…");
+                window.open("https://notebooklm.google.com/", "_blank");
             };
 
             navigator.clipboard.writeText(urlList).then(openNotebookLM).catch(function(err) {
@@ -988,11 +985,8 @@
             var textToCopy = selection ? selection : location.href;
 
             const openNotebookLM = function() {
-                // Show the disappearing pop-up first, then head to NotebookLM after ~1s.
-                showCustomGeminiNotification("Material copied — paste it with CTRL+V. Heading to NotebookLM now…");
-                setTimeout(function() {
-                    window.open("https://notebooklm.google.com/", "_blank");
-                }, 1000);
+                showCustomGeminiNotification("Material copied — paste it with CTRL+V. Opening NotebookLM now…");
+                window.open("https://notebooklm.google.com/", "_blank");
             };
 
             navigator.clipboard.writeText(textToCopy).then(openNotebookLM).catch(function(err) {
